@@ -8,6 +8,9 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/hytkgami/trivia-backend/graph"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -30,6 +33,13 @@ func run(ctx context.Context) error {
 	http.Handle("/ping", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("pong"))
 	}))
+
+	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{}}))
+
+	if os.Getenv("APP_ENV") == "development" {
+		http.Handle("/", playground.Handler("GraphQL playground", "/query"))
+	}
+	http.Handle("/query", srv)
 
 	s := &http.Server{
 		Addr:    ":" + port,

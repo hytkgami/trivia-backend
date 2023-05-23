@@ -1,0 +1,18 @@
+interface Node {
+  id: ID!
+}
+
+type Lobby implements Node {
+  id: ID!
+  name: String!
+}
+
+type Query {
+  lobbies: [Lobby!]!
+  lobby(id: ID!): Lobby
+}
+
+type Mutation {
+  createLobby(name: String!): Lobby!
+  deleteLobby(id: ID!): Lobby!
+}
