@@ -2,33 +2,15 @@ interface Node {
   id: ID!
 }
 
-type Lobby implements Node {
-  id: ID!
-  name: String!
-  public: Boolean!
-  # owner: User!
-}
-
 type User implements Node {
   id: ID!
   name: String!
 }
 
-type Query {
-  lobbies: [Lobby!]!
-  lobby(id: ID!): Lobby
-}
-
 type Mutation {
   signin(name: String!): SigninPayload!
-  createLobby(name: String!, public: Boolean! = false): CreateLobbyPayload!
-  deleteLobby(id: ID!): Lobby!
 }
 
 type SigninPayload {
   user: User!
-}
-
-type CreateLobbyPayload {
-  lobby: Lobby!
 }

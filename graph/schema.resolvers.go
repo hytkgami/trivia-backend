@@ -6,7 +6,6 @@ package graph
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hytkgami/trivia-backend/graph/model"
 	"github.com/hytkgami/trivia-backend/interfaces"
@@ -30,45 +29,7 @@ func (r *mutationResolver) Signin(ctx context.Context, name string) (*model.Sign
 	}, nil
 }
 
-// CreateLobby is the resolver for the createLobby field.
-func (r *mutationResolver) CreateLobby(ctx context.Context, name string, public bool) (*model.CreateLobbyPayload, error) {
-	uid, err := interfaces.GetUserUID(ctx)
-	if err != nil {
-		return nil, err
-	}
-	lobby, err := r.LobbyInteractor.CreateLobby(ctx, uid, name, public)
-	if err != nil {
-		return nil, err
-	}
-	return &model.CreateLobbyPayload{
-		Lobby: &model.Lobby{
-			ID:     lobby.ID,
-			Name:   lobby.Name,
-			Public: lobby.IsPublic,
-		},
-	}, nil
-}
-
-// DeleteLobby is the resolver for the deleteLobby field.
-func (r *mutationResolver) DeleteLobby(ctx context.Context, id string) (*model.Lobby, error) {
-	panic(fmt.Errorf("not implemented: DeleteLobby - deleteLobby"))
-}
-
-// Lobbies is the resolver for the lobbies field.
-func (r *queryResolver) Lobbies(ctx context.Context) ([]*model.Lobby, error) {
-	panic(fmt.Errorf("not implemented: Lobbies - lobbies"))
-}
-
-// Lobby is the resolver for the lobby field.
-func (r *queryResolver) Lobby(ctx context.Context, id string) (*model.Lobby, error) {
-	panic(fmt.Errorf("not implemented: Lobby - lobby"))
-}
-
 // Mutation returns MutationResolver implementation.
 func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 
-// Query returns QueryResolver implementation.
-func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
-
 type mutationResolver struct{ *Resolver }
-type queryResolver struct{ *Resolver }

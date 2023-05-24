@@ -1,0 +1,20 @@
+type Lobby implements Node {
+  id: ID!
+  name: String!
+  public: Boolean!
+  # owner: User!
+}
+
+type Query {
+  lobbies: [Lobby!]!
+  lobby(id: ID!): Lobby
+}
+
+extend type Mutation {
+  createLobby(name: String!, public: Boolean! = false): CreateLobbyPayload!
+  deleteLobby(id: ID!): Lobby!
+}
+
+type CreateLobbyPayload {
+  lobby: Lobby!
+}
