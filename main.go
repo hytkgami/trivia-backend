@@ -49,6 +49,11 @@ func run(ctx context.Context) error {
 				DB: db,
 			},
 		},
+		LobbyInteractor: &usecase.LobbyInteractor{
+			LobbyRepository: &repository.LobbyRepository{
+				DB: db,
+			},
+		},
 	}}))
 
 	if os.Getenv("APP_ENV") == "development" {

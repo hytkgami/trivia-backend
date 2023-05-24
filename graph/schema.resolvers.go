@@ -31,8 +31,22 @@ func (r *mutationResolver) Signin(ctx context.Context, name string) (*model.Sign
 }
 
 // CreateLobby is the resolver for the createLobby field.
-func (r *mutationResolver) CreateLobby(ctx context.Context, name string) (*model.Lobby, error) {
-	panic(fmt.Errorf("not implemented: CreateLobby - createLobby"))
+func (r *mutationResolver) CreateLobby(ctx context.Context, name string, public bool) (*model.CreateLobbyPayload, error) {
+	uid, err := interfaces.GetUserUID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	lobby, err := r.LobbyInteractor.CreateLobby(ctx, uid, name, public)
+	if err != nil {
+		return nil, err
+	}
+	return &model.CreateLobbyPayload{
+		Lobby: &model.Lobby{
+			ID:     lobby.ID,
+			Name:   lobby.Name,
+			Public: lobby.IsPublic,
+		},
+	}, nil
 }
 
 // DeleteLobby is the resolver for the deleteLobby field.

@@ -5,6 +5,8 @@ interface Node {
 type Lobby implements Node {
   id: ID!
   name: String!
+  public: Boolean!
+  # owner: User!
 }
 
 type User implements Node {
@@ -19,10 +21,14 @@ type Query {
 
 type Mutation {
   signin(name: String!): SigninPayload!
-  createLobby(name: String!): Lobby!
+  createLobby(name: String!, public: Boolean! = false): CreateLobbyPayload!
   deleteLobby(id: ID!): Lobby!
 }
 
 type SigninPayload {
   user: User!
+}
+
+type CreateLobbyPayload {
+  lobby: Lobby!
 }

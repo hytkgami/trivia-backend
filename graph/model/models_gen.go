@@ -7,9 +7,14 @@ type Node interface {
 	GetID() string
 }
 
+type CreateLobbyPayload struct {
+	Lobby *Lobby `json:"lobby"`
+}
+
 type Lobby struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+	ID     string `json:"id"`
+	Name   string `json:"name"`
+	Public bool   `json:"public"`
 }
 
 func (Lobby) IsNode()            {}
