@@ -14,3 +14,15 @@ type Lobby struct {
 
 func (Lobby) IsNode()            {}
 func (this Lobby) GetID() string { return this.ID }
+
+type SigninPayload struct {
+	User *User `json:"user"`
+}
+
+type User struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+func (User) IsNode()            {}
+func (this User) GetID() string { return this.ID }

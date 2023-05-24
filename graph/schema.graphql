@@ -7,12 +7,22 @@ type Lobby implements Node {
   name: String!
 }
 
+type User implements Node {
+  id: ID!
+  name: String!
+}
+
 type Query {
   lobbies: [Lobby!]!
   lobby(id: ID!): Lobby
 }
 
 type Mutation {
+  signin(name: String!): SigninPayload!
   createLobby(name: String!): Lobby!
   deleteLobby(id: ID!): Lobby!
+}
+
+type SigninPayload {
+  user: User!
 }

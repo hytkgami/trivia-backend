@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"testing"
+	"time"
 
 	"golang.org/x/sync/errgroup"
 )
@@ -22,7 +23,12 @@ func TestHealthCheck(t *testing.T) {
 
 	resp, err := http.Get(fmt.Sprintf("http://localhost:%s/ping", port))
 	if err != nil {
-		t.Errorf("failed to health check: %+v", err)
+		t.Log("failed to health check, retrying...")
+		time.Sleep(2 * time.Second)
+		resp, err = http.Get(fmt.Sprintf("http://localhost:%s/ping", port))
+		if err != nil {
+			t.Errorf("failed to health check: %+v", err)
+		}
 	}
 	defer resp.Body.Close()
 

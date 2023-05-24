@@ -9,7 +9,26 @@ import (
 	"fmt"
 
 	"github.com/hytkgami/trivia-backend/graph/model"
+	"github.com/hytkgami/trivia-backend/interfaces"
 )
+
+// Signin is the resolver for the signin field.
+func (r *mutationResolver) Signin(ctx context.Context, name string) (*model.SigninPayload, error) {
+	uid, err := interfaces.GetUserUID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	user, err := r.UserInteractor.Signin(ctx, uid, name)
+	if err != nil {
+		return nil, err
+	}
+	return &model.SigninPayload{
+		User: &model.User{
+			ID:   user.UID,
+			Name: user.Name,
+		},
+	}, nil
+}
 
 // CreateLobby is the resolver for the createLobby field.
 func (r *mutationResolver) CreateLobby(ctx context.Context, name string) (*model.Lobby, error) {

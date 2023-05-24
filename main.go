@@ -13,6 +13,8 @@ import (
 	"github.com/hytkgami/trivia-backend/graph"
 	"github.com/hytkgami/trivia-backend/infrastructure"
 	"github.com/hytkgami/trivia-backend/interfaces/middleware"
+	"github.com/hytkgami/trivia-backend/interfaces/repository"
+	"github.com/hytkgami/trivia-backend/usecase"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -36,7 +38,18 @@ func run(ctx context.Context) error {
 		w.Write([]byte("pong"))
 	}))
 
-	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{}}))
+	db, err := infrastructure.NewDB(ctx)
+	if err != nil {
+		return err
+	}
+
+	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{
+		UserInteractor: &usecase.UserInteractor{
+			UserRepository: &repository.UserRepository{
+				DB: db,
+			},
+		},
+	}}))
 
 	if os.Getenv("APP_ENV") == "development" {
 		http.Handle("/", playground.Handler("GraphQL playground", "/query"))
