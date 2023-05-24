@@ -11,6 +11,8 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/hytkgami/trivia-backend/graph"
+	"github.com/hytkgami/trivia-backend/infrastructure"
+	"github.com/hytkgami/trivia-backend/interfaces/middleware"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -41,9 +43,14 @@ func run(ctx context.Context) error {
 	}
 	http.Handle("/query", srv)
 
+	authHandler, err := infrastructure.NewFirebaseAuthHandler(ctx)
+	if err != nil {
+		return err
+	}
+	authMiddleware := middleware.NewAuthMiddleware(authHandler)
 	s := &http.Server{
 		Addr:    ":" + port,
-		Handler: nil,
+		Handler: authMiddleware.Middleware(http.DefaultServeMux),
 	}
 
 	eg, ctx := errgroup.WithContext(ctx)
