@@ -1,0 +1,19 @@
+type PageInfo {
+    hasNextPage: Boolean!
+    cursor: String!
+}
+
+enum OrderDirection {
+    ASC
+    DESC
+}
+
+interface Edge {
+    cursor: String!
+    node: Node!
+}
+
+interface Connection {
+    pageInfo: PageInfo
+    edges: [Edge!]!
+}

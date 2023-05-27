@@ -8,4 +8,5 @@ import (
 
 type LobbyRepository interface {
 	CreateLobby(ctx context.Context, uid, name string, public bool) (*domain.Lobby, error)
+	FetchLobbies(ctx context.Context, pagination *CursorPagination) ([]*domain.Lobby, error)
 }

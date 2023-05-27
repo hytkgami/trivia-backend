@@ -2,7 +2,6 @@ package infrastructure
 
 import (
 	"context"
-	"log"
 
 	firebase "firebase.google.com/go/v4"
 	"firebase.google.com/go/v4/auth"
@@ -32,7 +31,7 @@ type FirebaseAuthToken struct {
 func (h *FirebaseAuthHandler) VerifyIDToken(ctx context.Context, idToken string) (repository.FirebaseAuthToken, error) {
 	token, err := h.client.VerifyIDToken(ctx, idToken)
 	if err != nil {
-		log.Fatalf("error verifying ID token: %v\n", err)
+		return nil, err
 	}
 	return &FirebaseAuthToken{token: token}, nil
 }

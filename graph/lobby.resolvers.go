@@ -7,9 +7,12 @@ package graph
 import (
 	"context"
 	"fmt"
+	"strings"
 
+	"github.com/hytkgami/trivia-backend/graph/helper"
 	"github.com/hytkgami/trivia-backend/graph/model"
 	"github.com/hytkgami/trivia-backend/interfaces"
+	"github.com/hytkgami/trivia-backend/usecase"
 )
 
 // CreateLobby is the resolver for the createLobby field.
@@ -37,8 +40,39 @@ func (r *mutationResolver) DeleteLobby(ctx context.Context, id string) (*model.L
 }
 
 // Lobbies is the resolver for the lobbies field.
-func (r *queryResolver) Lobbies(ctx context.Context) ([]*model.Lobby, error) {
-	panic(fmt.Errorf("not implemented: Lobbies - lobbies"))
+func (r *queryResolver) Lobbies(ctx context.Context, first *int, last *int, after *string, before *string, orderDirection model.OrderDirection, orderBy model.LobbiesQueryOrderBy) (*model.LobbyConnection, error) {
+	if err := helper.ValidateRelayCursor(first, after, last, before); err != nil {
+		return nil, err
+	}
+	params := &usecase.CursorParams{
+		First:   first,
+		Last:    last,
+		After:   after,
+		Before:  before,
+		OrderBy: strings.ToLower(orderBy.String()),
+	}
+	lobbies, pageInfo, err := r.LobbyInteractor.FetchLobbies(ctx, params)
+	if err != nil {
+		return nil, err
+	}
+	edges := make([]*model.LobbyEdge, len(lobbies))
+	for i, lobby := range lobbies {
+		edges[i] = &model.LobbyEdge{
+			Node: &model.Lobby{
+				ID:     lobby.ID,
+				Name:   lobby.Name,
+				Public: lobby.IsPublic,
+			},
+			Cursor: lobby.ID,
+		}
+	}
+	return &model.LobbyConnection{
+		Edges: edges,
+		PageInfo: &model.PageInfo{
+			HasNextPage: pageInfo.HasNextPage,
+			Cursor:      pageInfo.Cursor,
+		},
+	}, nil
 }
 
 // Lobby is the resolver for the lobby field.

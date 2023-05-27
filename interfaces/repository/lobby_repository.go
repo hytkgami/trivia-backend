@@ -6,6 +6,7 @@ import (
 
 	"github.com/hytkgami/trivia-backend/domain"
 	"github.com/hytkgami/trivia-backend/internal"
+	"github.com/hytkgami/trivia-backend/usecase"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -40,4 +41,27 @@ func (r *LobbyRepository) CreateLobby(ctx context.Context, uid, name string, pub
 		Name:     name,
 		IsPublic: public,
 	}, nil
+}
+
+func (r *LobbyRepository) FetchLobbies(ctx context.Context, pagination *usecase.CursorPagination) ([]*domain.Lobby, error) {
+	query := `SELECT lobby_id, owner_uid, name, is_public FROM "public"."lobbies" WHERE is_public = TRUE`
+	cursorQuery, whereArgs, err := generateCursorQuery(pagination)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch lobbies: %w", err)
+	}
+	query = query + cursorQuery
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch lobbies: %w", err)
+	}
+	query = r.DB.Rebind(query)
+	var lobbies []*domain.Lobby
+	// FIXME: SelectContextに渡る際にカーソルの絞り込みが無効になっているため修正する
+	// 発行SQL: SELECT lobby_id, owner_uid, name, is_public FROM "public"."lobbies" WHERE is_public = TRUE AND $1 > $2 ORDER BY $3 ASC LIMIT $4
+	// Args: [lobby_id 01H16KS0GJQ489TMPGMCKJFQW0 lobby_id 4]
+	// 他のDBクライアントや、クエリをバインドなしで発行した場合は正常に動作する
+	err = r.DB.SelectContext(ctx, &lobbies, query, whereArgs...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch lobbies: %w", err)
+	}
+	return lobbies, nil
 }

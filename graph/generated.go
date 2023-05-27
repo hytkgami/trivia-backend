@@ -55,14 +55,29 @@ type ComplexityRoot struct {
 		Public func(childComplexity int) int
 	}
 
+	LobbyConnection struct {
+		Edges    func(childComplexity int) int
+		PageInfo func(childComplexity int) int
+	}
+
+	LobbyEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
 	Mutation struct {
 		CreateLobby func(childComplexity int, name string, public bool) int
 		DeleteLobby func(childComplexity int, id string) int
 		Signin      func(childComplexity int, name string) int
 	}
 
+	PageInfo struct {
+		Cursor      func(childComplexity int) int
+		HasNextPage func(childComplexity int) int
+	}
+
 	Query struct {
-		Lobbies func(childComplexity int) int
+		Lobbies func(childComplexity int, first *int, last *int, after *string, before *string, orderDirection model.OrderDirection, orderBy model.LobbiesQueryOrderBy) int
 		Lobby   func(childComplexity int, id string) int
 	}
 
@@ -82,7 +97,7 @@ type MutationResolver interface {
 	DeleteLobby(ctx context.Context, id string) (*model.Lobby, error)
 }
 type QueryResolver interface {
-	Lobbies(ctx context.Context) ([]*model.Lobby, error)
+	Lobbies(ctx context.Context, first *int, last *int, after *string, before *string, orderDirection model.OrderDirection, orderBy model.LobbiesQueryOrderBy) (*model.LobbyConnection, error)
 	Lobby(ctx context.Context, id string) (*model.Lobby, error)
 }
 
@@ -129,6 +144,34 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Lobby.Public(childComplexity), true
 
+	case "LobbyConnection.edges":
+		if e.complexity.LobbyConnection.Edges == nil {
+			break
+		}
+
+		return e.complexity.LobbyConnection.Edges(childComplexity), true
+
+	case "LobbyConnection.pageInfo":
+		if e.complexity.LobbyConnection.PageInfo == nil {
+			break
+		}
+
+		return e.complexity.LobbyConnection.PageInfo(childComplexity), true
+
+	case "LobbyEdge.cursor":
+		if e.complexity.LobbyEdge.Cursor == nil {
+			break
+		}
+
+		return e.complexity.LobbyEdge.Cursor(childComplexity), true
+
+	case "LobbyEdge.node":
+		if e.complexity.LobbyEdge.Node == nil {
+			break
+		}
+
+		return e.complexity.LobbyEdge.Node(childComplexity), true
+
 	case "Mutation.createLobby":
 		if e.complexity.Mutation.CreateLobby == nil {
 			break
@@ -165,12 +208,31 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.Signin(childComplexity, args["name"].(string)), true
 
+	case "PageInfo.cursor":
+		if e.complexity.PageInfo.Cursor == nil {
+			break
+		}
+
+		return e.complexity.PageInfo.Cursor(childComplexity), true
+
+	case "PageInfo.hasNextPage":
+		if e.complexity.PageInfo.HasNextPage == nil {
+			break
+		}
+
+		return e.complexity.PageInfo.HasNextPage(childComplexity), true
+
 	case "Query.lobbies":
 		if e.complexity.Query.Lobbies == nil {
 			break
 		}
 
-		return e.complexity.Query.Lobbies(childComplexity), true
+		args, err := ec.field_Query_lobbies_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Lobbies(childComplexity, args["first"].(*int), args["last"].(*int), args["after"].(*string), args["before"].(*string), args["orderDirection"].(model.OrderDirection), args["orderBy"].(model.LobbiesQueryOrderBy)), true
 
 	case "Query.lobby":
 		if e.complexity.Query.Lobby == nil {
@@ -271,7 +333,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 	return introspection.WrapTypeFromDef(parsedSchema, parsedSchema.Types[name]), nil
 }
 
-//go:embed "lobby.graphql" "schema.graphql"
+//go:embed "lobby.graphql" "relay.graphql" "schema.graphql"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -284,6 +346,7 @@ func sourceData(filename string) string {
 
 var sources = []*ast.Source{
 	{Name: "lobby.graphql", Input: sourceData("lobby.graphql"), BuiltIn: false},
+	{Name: "relay.graphql", Input: sourceData("relay.graphql"), BuiltIn: false},
 	{Name: "schema.graphql", Input: sourceData("schema.graphql"), BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -358,6 +421,66 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_lobbies_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *int
+	if tmp, ok := rawArgs["first"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
+		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["first"] = arg0
+	var arg1 *int
+	if tmp, ok := rawArgs["last"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
+		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["last"] = arg1
+	var arg2 *string
+	if tmp, ok := rawArgs["after"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
+		arg2, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["after"] = arg2
+	var arg3 *string
+	if tmp, ok := rawArgs["before"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("before"))
+		arg3, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["before"] = arg3
+	var arg4 model.OrderDirection
+	if tmp, ok := rawArgs["orderDirection"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("orderDirection"))
+		arg4, err = ec.unmarshalNOrderDirection2githubᚗcomᚋhytkgamiᚋtriviaᚑbackendᚋgraphᚋmodelᚐOrderDirection(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["orderDirection"] = arg4
+	var arg5 model.LobbiesQueryOrderBy
+	if tmp, ok := rawArgs["orderBy"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("orderBy"))
+		arg5, err = ec.unmarshalNLobbiesQueryOrderBy2githubᚗcomᚋhytkgamiᚋtriviaᚑbackendᚋgraphᚋmodelᚐLobbiesQueryOrderBy(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["orderBy"] = arg5
 	return args, nil
 }
 
@@ -598,6 +721,202 @@ func (ec *executionContext) fieldContext_Lobby_public(ctx context.Context, field
 	return fc, nil
 }
 
+func (ec *executionContext) _LobbyConnection_edges(ctx context.Context, field graphql.CollectedField, obj *model.LobbyConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_LobbyConnection_edges(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Edges, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.LobbyEdge)
+	fc.Result = res
+	return ec.marshalNLobbyEdge2ᚕᚖgithubᚗcomᚋhytkgamiᚋtriviaᚑbackendᚋgraphᚋmodelᚐLobbyEdgeᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_LobbyConnection_edges(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "LobbyConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "cursor":
+				return ec.fieldContext_LobbyEdge_cursor(ctx, field)
+			case "node":
+				return ec.fieldContext_LobbyEdge_node(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type LobbyEdge", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _LobbyConnection_pageInfo(ctx context.Context, field graphql.CollectedField, obj *model.LobbyConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_LobbyConnection_pageInfo(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PageInfo, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.PageInfo)
+	fc.Result = res
+	return ec.marshalNPageInfo2ᚖgithubᚗcomᚋhytkgamiᚋtriviaᚑbackendᚋgraphᚋmodelᚐPageInfo(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_LobbyConnection_pageInfo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "LobbyConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "hasNextPage":
+				return ec.fieldContext_PageInfo_hasNextPage(ctx, field)
+			case "cursor":
+				return ec.fieldContext_PageInfo_cursor(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type PageInfo", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _LobbyEdge_cursor(ctx context.Context, field graphql.CollectedField, obj *model.LobbyEdge) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_LobbyEdge_cursor(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Cursor, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_LobbyEdge_cursor(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "LobbyEdge",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _LobbyEdge_node(ctx context.Context, field graphql.CollectedField, obj *model.LobbyEdge) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_LobbyEdge_node(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Node, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Lobby)
+	fc.Result = res
+	return ec.marshalNLobby2ᚖgithubᚗcomᚋhytkgamiᚋtriviaᚑbackendᚋgraphᚋmodelᚐLobby(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_LobbyEdge_node(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "LobbyEdge",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Lobby_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Lobby_name(ctx, field)
+			case "public":
+				return ec.fieldContext_Lobby_public(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Lobby", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_signin(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_signin(ctx, field)
 	if err != nil {
@@ -779,6 +1098,94 @@ func (ec *executionContext) fieldContext_Mutation_deleteLobby(ctx context.Contex
 	return fc, nil
 }
 
+func (ec *executionContext) _PageInfo_hasNextPage(ctx context.Context, field graphql.CollectedField, obj *model.PageInfo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PageInfo_hasNextPage(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.HasNextPage, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PageInfo_hasNextPage(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PageInfo",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PageInfo_cursor(ctx context.Context, field graphql.CollectedField, obj *model.PageInfo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PageInfo_cursor(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Cursor, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PageInfo_cursor(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PageInfo",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_lobbies(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_lobbies(ctx, field)
 	if err != nil {
@@ -793,7 +1200,7 @@ func (ec *executionContext) _Query_lobbies(ctx context.Context, field graphql.Co
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Lobbies(rctx)
+		return ec.resolvers.Query().Lobbies(rctx, fc.Args["first"].(*int), fc.Args["last"].(*int), fc.Args["after"].(*string), fc.Args["before"].(*string), fc.Args["orderDirection"].(model.OrderDirection), fc.Args["orderBy"].(model.LobbiesQueryOrderBy))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -805,9 +1212,9 @@ func (ec *executionContext) _Query_lobbies(ctx context.Context, field graphql.Co
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*model.Lobby)
+	res := resTmp.(*model.LobbyConnection)
 	fc.Result = res
-	return ec.marshalNLobby2ᚕᚖgithubᚗcomᚋhytkgamiᚋtriviaᚑbackendᚋgraphᚋmodelᚐLobbyᚄ(ctx, field.Selections, res)
+	return ec.marshalNLobbyConnection2ᚖgithubᚗcomᚋhytkgamiᚋtriviaᚑbackendᚋgraphᚋmodelᚐLobbyConnection(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_lobbies(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -818,15 +1225,24 @@ func (ec *executionContext) fieldContext_Query_lobbies(ctx context.Context, fiel
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "id":
-				return ec.fieldContext_Lobby_id(ctx, field)
-			case "name":
-				return ec.fieldContext_Lobby_name(ctx, field)
-			case "public":
-				return ec.fieldContext_Lobby_public(ctx, field)
+			case "edges":
+				return ec.fieldContext_LobbyConnection_edges(ctx, field)
+			case "pageInfo":
+				return ec.fieldContext_LobbyConnection_pageInfo(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Lobby", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type LobbyConnection", field.Name)
 		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_lobbies_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
 	}
 	return fc, nil
 }
@@ -2935,6 +3351,38 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(ctx context.Conte
 
 // region    ************************** interface.gotpl ***************************
 
+func (ec *executionContext) _Connection(ctx context.Context, sel ast.SelectionSet, obj model.Connection) graphql.Marshaler {
+	switch obj := (obj).(type) {
+	case nil:
+		return graphql.Null
+	case model.LobbyConnection:
+		return ec._LobbyConnection(ctx, sel, &obj)
+	case *model.LobbyConnection:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._LobbyConnection(ctx, sel, obj)
+	default:
+		panic(fmt.Errorf("unexpected type %T", obj))
+	}
+}
+
+func (ec *executionContext) _Edge(ctx context.Context, sel ast.SelectionSet, obj model.Edge) graphql.Marshaler {
+	switch obj := (obj).(type) {
+	case nil:
+		return graphql.Null
+	case model.LobbyEdge:
+		return ec._LobbyEdge(ctx, sel, &obj)
+	case *model.LobbyEdge:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._LobbyEdge(ctx, sel, obj)
+	default:
+		panic(fmt.Errorf("unexpected type %T", obj))
+	}
+}
+
 func (ec *executionContext) _Node(ctx context.Context, sel ast.SelectionSet, obj model.Node) graphql.Marshaler {
 	switch obj := (obj).(type) {
 	case nil:
@@ -3032,6 +3480,76 @@ func (ec *executionContext) _Lobby(ctx context.Context, sel ast.SelectionSet, ob
 	return out
 }
 
+var lobbyConnectionImplementors = []string{"LobbyConnection", "Connection"}
+
+func (ec *executionContext) _LobbyConnection(ctx context.Context, sel ast.SelectionSet, obj *model.LobbyConnection) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, lobbyConnectionImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("LobbyConnection")
+		case "edges":
+
+			out.Values[i] = ec._LobbyConnection_edges(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "pageInfo":
+
+			out.Values[i] = ec._LobbyConnection_pageInfo(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var lobbyEdgeImplementors = []string{"LobbyEdge", "Edge"}
+
+func (ec *executionContext) _LobbyEdge(ctx context.Context, sel ast.SelectionSet, obj *model.LobbyEdge) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, lobbyEdgeImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("LobbyEdge")
+		case "cursor":
+
+			out.Values[i] = ec._LobbyEdge_cursor(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "node":
+
+			out.Values[i] = ec._LobbyEdge_node(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var mutationImplementors = []string{"Mutation"}
 
 func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -3074,6 +3592,41 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_deleteLobby(ctx, field)
 			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var pageInfoImplementors = []string{"PageInfo"}
+
+func (ec *executionContext) _PageInfo(ctx context.Context, sel ast.SelectionSet, obj *model.PageInfo) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, pageInfoImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("PageInfo")
+		case "hasNextPage":
+
+			out.Values[i] = ec._PageInfo_hasNextPage(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "cursor":
+
+			out.Values[i] = ec._PageInfo_cursor(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++
@@ -3599,11 +4152,45 @@ func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.Selec
 	return res
 }
 
+func (ec *executionContext) unmarshalNLobbiesQueryOrderBy2githubᚗcomᚋhytkgamiᚋtriviaᚑbackendᚋgraphᚋmodelᚐLobbiesQueryOrderBy(ctx context.Context, v interface{}) (model.LobbiesQueryOrderBy, error) {
+	var res model.LobbiesQueryOrderBy
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNLobbiesQueryOrderBy2githubᚗcomᚋhytkgamiᚋtriviaᚑbackendᚋgraphᚋmodelᚐLobbiesQueryOrderBy(ctx context.Context, sel ast.SelectionSet, v model.LobbiesQueryOrderBy) graphql.Marshaler {
+	return v
+}
+
 func (ec *executionContext) marshalNLobby2githubᚗcomᚋhytkgamiᚋtriviaᚑbackendᚋgraphᚋmodelᚐLobby(ctx context.Context, sel ast.SelectionSet, v model.Lobby) graphql.Marshaler {
 	return ec._Lobby(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNLobby2ᚕᚖgithubᚗcomᚋhytkgamiᚋtriviaᚑbackendᚋgraphᚋmodelᚐLobbyᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Lobby) graphql.Marshaler {
+func (ec *executionContext) marshalNLobby2ᚖgithubᚗcomᚋhytkgamiᚋtriviaᚑbackendᚋgraphᚋmodelᚐLobby(ctx context.Context, sel ast.SelectionSet, v *model.Lobby) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Lobby(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNLobbyConnection2githubᚗcomᚋhytkgamiᚋtriviaᚑbackendᚋgraphᚋmodelᚐLobbyConnection(ctx context.Context, sel ast.SelectionSet, v model.LobbyConnection) graphql.Marshaler {
+	return ec._LobbyConnection(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNLobbyConnection2ᚖgithubᚗcomᚋhytkgamiᚋtriviaᚑbackendᚋgraphᚋmodelᚐLobbyConnection(ctx context.Context, sel ast.SelectionSet, v *model.LobbyConnection) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._LobbyConnection(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNLobbyEdge2ᚕᚖgithubᚗcomᚋhytkgamiᚋtriviaᚑbackendᚋgraphᚋmodelᚐLobbyEdgeᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.LobbyEdge) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -3627,7 +4214,7 @@ func (ec *executionContext) marshalNLobby2ᚕᚖgithubᚗcomᚋhytkgamiᚋtrivia
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNLobby2ᚖgithubᚗcomᚋhytkgamiᚋtriviaᚑbackendᚋgraphᚋmodelᚐLobby(ctx, sel, v[i])
+			ret[i] = ec.marshalNLobbyEdge2ᚖgithubᚗcomᚋhytkgamiᚋtriviaᚑbackendᚋgraphᚋmodelᚐLobbyEdge(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -3647,14 +4234,34 @@ func (ec *executionContext) marshalNLobby2ᚕᚖgithubᚗcomᚋhytkgamiᚋtrivia
 	return ret
 }
 
-func (ec *executionContext) marshalNLobby2ᚖgithubᚗcomᚋhytkgamiᚋtriviaᚑbackendᚋgraphᚋmodelᚐLobby(ctx context.Context, sel ast.SelectionSet, v *model.Lobby) graphql.Marshaler {
+func (ec *executionContext) marshalNLobbyEdge2ᚖgithubᚗcomᚋhytkgamiᚋtriviaᚑbackendᚋgraphᚋmodelᚐLobbyEdge(ctx context.Context, sel ast.SelectionSet, v *model.LobbyEdge) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
 		}
 		return graphql.Null
 	}
-	return ec._Lobby(ctx, sel, v)
+	return ec._LobbyEdge(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNOrderDirection2githubᚗcomᚋhytkgamiᚋtriviaᚑbackendᚋgraphᚋmodelᚐOrderDirection(ctx context.Context, v interface{}) (model.OrderDirection, error) {
+	var res model.OrderDirection
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNOrderDirection2githubᚗcomᚋhytkgamiᚋtriviaᚑbackendᚋgraphᚋmodelᚐOrderDirection(ctx context.Context, sel ast.SelectionSet, v model.OrderDirection) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) marshalNPageInfo2ᚖgithubᚗcomᚋhytkgamiᚋtriviaᚑbackendᚋgraphᚋmodelᚐPageInfo(ctx context.Context, sel ast.SelectionSet, v *model.PageInfo) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._PageInfo(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNSigninPayload2githubᚗcomᚋhytkgamiᚋtriviaᚑbackendᚋgraphᚋmodelᚐSigninPayload(ctx context.Context, sel ast.SelectionSet, v model.SigninPayload) graphql.Marshaler {
@@ -3972,6 +4579,22 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 		return graphql.Null
 	}
 	res := graphql.MarshalBoolean(*v)
+	return res
+}
+
+func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalInt(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.SelectionSet, v *int) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	res := graphql.MarshalInt(*v)
 	return res
 }
 

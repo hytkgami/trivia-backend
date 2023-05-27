@@ -6,8 +6,19 @@ type Lobby implements Node {
 }
 
 type Query {
-  lobbies: [Lobby!]!
+  lobbies(
+    first: Int,
+    last: Int,
+    after: String,
+    before: String,
+    orderDirection: OrderDirection! = ASC
+    orderBy: LobbiesQueryOrderBy! = LOBBY_ID
+  ): LobbyConnection!
   lobby(id: ID!): Lobby
+}
+
+enum LobbiesQueryOrderBy {
+  LOBBY_ID
 }
 
 extend type Mutation {
@@ -17,4 +28,14 @@ extend type Mutation {
 
 type CreateLobbyPayload {
   lobby: Lobby!
+}
+
+type LobbyEdge implements Edge {
+  cursor: String!
+  node: Lobby!
+}
+
+type LobbyConnection implements Connection {
+  edges: [LobbyEdge!]!
+  pageInfo: PageInfo!
 }
