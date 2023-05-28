@@ -17,6 +17,7 @@ func (r *AnswerRepository) Create(ctx context.Context, uid, quesitonID, content 
 	query := `
     INSERT INTO answers (answer_id, uid, question_id, content)
     VALUES (:answer_id, :uid, :question_id, :content)
+		ON CONFLICT (question_id, uid) DO UPDATE SET content = :content, updated_at = NOW();
   `
 	id, err := internal.NewULID()
 	if err != nil {

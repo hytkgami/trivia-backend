@@ -42,5 +42,6 @@ CREATE TABLE "public"."answers" (
     "updated_at" timestamptz NOT NULL DEFAULT now(),
     PRIMARY KEY ("answer_id"),
     FOREIGN KEY ("question_id") REFERENCES "public"."questions"("question_id") ON UPDATE CASCADE,
-    FOREIGN KEY ("uid") REFERENCES "public"."users"("uid") ON UPDATE CASCADE
+    FOREIGN KEY ("uid") REFERENCES "public"."users"("uid") ON UPDATE CASCADE,
+    UNIQUE ("question_id", "uid")
 );
