@@ -43,3 +43,21 @@ func (r *mutationResolver) CreateQuestions(ctx context.Context, lobbyID string, 
 		Questions: result,
 	}, nil
 }
+
+// Answer is the resolver for the answer field.
+func (r *mutationResolver) Answer(ctx context.Context, questionID string, answer string) (*model.AnswerPayload, error) {
+	uid, err := interfaces.GetUserUID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	a, err := r.AnswerInteractor.Create(ctx, uid, questionID, answer)
+	if err != nil {
+		return nil, err
+	}
+	return &model.AnswerPayload{
+		Answer: &model.Answer{
+			ID:      a.ID,
+			Content: a.Content,
+		},
+	}, nil
+}

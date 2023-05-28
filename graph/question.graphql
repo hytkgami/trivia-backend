@@ -8,6 +8,7 @@ type Question implements Node {
 
 extend type Mutation {
   createQuestions(lobbyId: ID!, questions: [QuestionInput!]!): CreateQuestionPayload!
+  answer(questionId: ID!, answer: String!): AnswerPayload!
 }
 
 input QuestionInput {
@@ -18,4 +19,14 @@ input QuestionInput {
 
 type CreateQuestionPayload {
   questions: [Question!]!
+}
+
+type AnswerPayload {
+  answer: Answer!
+}
+
+type Answer implements Node {
+  id: ID!
+  # question: Question!
+  content: String!
 }

@@ -45,6 +45,15 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	Answer struct {
+		Content func(childComplexity int) int
+		ID      func(childComplexity int) int
+	}
+
+	AnswerPayload struct {
+		Answer func(childComplexity int) int
+	}
+
 	CreateLobbyPayload struct {
 		Lobby func(childComplexity int) int
 	}
@@ -70,6 +79,7 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
+		Answer          func(childComplexity int, questionID string, answer string) int
 		CreateLobby     func(childComplexity int, name string, public bool) int
 		CreateQuestions func(childComplexity int, lobbyID string, questions []*model.QuestionInput) int
 		DeleteLobby     func(childComplexity int, id string) int
@@ -108,6 +118,7 @@ type MutationResolver interface {
 	CreateLobby(ctx context.Context, name string, public bool) (*model.CreateLobbyPayload, error)
 	DeleteLobby(ctx context.Context, id string) (*model.Lobby, error)
 	CreateQuestions(ctx context.Context, lobbyID string, questions []*model.QuestionInput) (*model.CreateQuestionPayload, error)
+	Answer(ctx context.Context, questionID string, answer string) (*model.AnswerPayload, error)
 }
 type QueryResolver interface {
 	Lobbies(ctx context.Context, first *int, last *int, after *string, before *string, orderDirection model.OrderDirection, orderBy model.LobbiesQueryOrderBy) (*model.LobbyConnection, error)
@@ -128,6 +139,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e}
 	_ = ec
 	switch typeName + "." + field {
+
+	case "Answer.content":
+		if e.complexity.Answer.Content == nil {
+			break
+		}
+
+		return e.complexity.Answer.Content(childComplexity), true
+
+	case "Answer.id":
+		if e.complexity.Answer.ID == nil {
+			break
+		}
+
+		return e.complexity.Answer.ID(childComplexity), true
+
+	case "AnswerPayload.answer":
+		if e.complexity.AnswerPayload.Answer == nil {
+			break
+		}
+
+		return e.complexity.AnswerPayload.Answer(childComplexity), true
 
 	case "CreateLobbyPayload.lobby":
 		if e.complexity.CreateLobbyPayload.Lobby == nil {
@@ -191,6 +223,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.LobbyEdge.Node(childComplexity), true
+
+	case "Mutation.answer":
+		if e.complexity.Mutation.Answer == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_answer_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.Answer(childComplexity, args["questionId"].(string), args["answer"].(string)), true
 
 	case "Mutation.createLobby":
 		if e.complexity.Mutation.CreateLobby == nil {
@@ -418,6 +462,30 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
 // region    ***************************** args.gotpl *****************************
 
+func (ec *executionContext) field_Mutation_answer_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["questionId"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("questionId"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["questionId"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["answer"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("answer"))
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["answer"] = arg1
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_createLobby_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -623,6 +691,144 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 // endregion ************************** directives.gotpl **************************
 
 // region    **************************** field.gotpl *****************************
+
+func (ec *executionContext) _Answer_id(ctx context.Context, field graphql.CollectedField, obj *model.Answer) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Answer_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Answer_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Answer",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Answer_content(ctx context.Context, field graphql.CollectedField, obj *model.Answer) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Answer_content(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Content, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Answer_content(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Answer",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AnswerPayload_answer(ctx context.Context, field graphql.CollectedField, obj *model.AnswerPayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AnswerPayload_answer(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Answer, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Answer)
+	fc.Result = res
+	return ec.marshalNAnswer2ᚖgithubᚗcomᚋhytkgamiᚋtriviaᚑbackendᚋgraphᚋmodelᚐAnswer(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AnswerPayload_answer(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AnswerPayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Answer_id(ctx, field)
+			case "content":
+				return ec.fieldContext_Answer_content(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Answer", field.Name)
+		},
+	}
+	return fc, nil
+}
 
 func (ec *executionContext) _CreateLobbyPayload_lobby(ctx context.Context, field graphql.CollectedField, obj *model.CreateLobbyPayload) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_CreateLobbyPayload_lobby(ctx, field)
@@ -1292,6 +1498,65 @@ func (ec *executionContext) fieldContext_Mutation_createQuestions(ctx context.Co
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_createQuestions_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_answer(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_answer(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().Answer(rctx, fc.Args["questionId"].(string), fc.Args["answer"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.AnswerPayload)
+	fc.Result = res
+	return ec.marshalNAnswerPayload2ᚖgithubᚗcomᚋhytkgamiᚋtriviaᚑbackendᚋgraphᚋmodelᚐAnswerPayload(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_answer(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "answer":
+				return ec.fieldContext_AnswerPayload_answer(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type AnswerPayload", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_answer_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -3824,6 +4089,13 @@ func (ec *executionContext) _Node(ctx context.Context, sel ast.SelectionSet, obj
 			return graphql.Null
 		}
 		return ec._Question(ctx, sel, obj)
+	case model.Answer:
+		return ec._Answer(ctx, sel, &obj)
+	case *model.Answer:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._Answer(ctx, sel, obj)
 	case model.User:
 		return ec._User(ctx, sel, &obj)
 	case *model.User:
@@ -3839,6 +4111,69 @@ func (ec *executionContext) _Node(ctx context.Context, sel ast.SelectionSet, obj
 // endregion ************************** interface.gotpl ***************************
 
 // region    **************************** object.gotpl ****************************
+
+var answerImplementors = []string{"Answer", "Node"}
+
+func (ec *executionContext) _Answer(ctx context.Context, sel ast.SelectionSet, obj *model.Answer) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, answerImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Answer")
+		case "id":
+
+			out.Values[i] = ec._Answer_id(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "content":
+
+			out.Values[i] = ec._Answer_content(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var answerPayloadImplementors = []string{"AnswerPayload"}
+
+func (ec *executionContext) _AnswerPayload(ctx context.Context, sel ast.SelectionSet, obj *model.AnswerPayload) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, answerPayloadImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("AnswerPayload")
+		case "answer":
+
+			out.Values[i] = ec._AnswerPayload_answer(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
 
 var createLobbyPayloadImplementors = []string{"CreateLobbyPayload"}
 
@@ -4058,6 +4393,15 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createQuestions(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "answer":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_answer(ctx, field)
 			})
 
 			if out.Values[i] == graphql.Null {
@@ -4623,6 +4967,30 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 // endregion **************************** object.gotpl ****************************
 
 // region    ***************************** type.gotpl *****************************
+
+func (ec *executionContext) marshalNAnswer2ᚖgithubᚗcomᚋhytkgamiᚋtriviaᚑbackendᚋgraphᚋmodelᚐAnswer(ctx context.Context, sel ast.SelectionSet, v *model.Answer) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Answer(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNAnswerPayload2githubᚗcomᚋhytkgamiᚋtriviaᚑbackendᚋgraphᚋmodelᚐAnswerPayload(ctx context.Context, sel ast.SelectionSet, v model.AnswerPayload) graphql.Marshaler {
+	return ec._AnswerPayload(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNAnswerPayload2ᚖgithubᚗcomᚋhytkgamiᚋtriviaᚑbackendᚋgraphᚋmodelᚐAnswerPayload(ctx context.Context, sel ast.SelectionSet, v *model.AnswerPayload) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._AnswerPayload(ctx, sel, v)
+}
 
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)

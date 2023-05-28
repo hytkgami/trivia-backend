@@ -7,6 +7,7 @@ import "github.com/hytkgami/trivia-backend/usecase"
 // It serves as dependency injection for your app, add any dependencies you require here.
 
 type Resolver struct {
+	AnswerInteractor   *usecase.AnswerInteractor
 	UserInteractor     *usecase.UserInteractor
 	LobbyInteractor    *usecase.LobbyInteractor
 	QuestionInteractor *usecase.QuestionInteractor

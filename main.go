@@ -44,6 +44,11 @@ func run(ctx context.Context) error {
 	}
 
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{
+		AnswerInteractor: &usecase.AnswerInteractor{
+			AnswerRepository: &repository.AnswerRepository{
+				DB: db,
+			},
+		},
 		UserInteractor: &usecase.UserInteractor{
 			UserRepository: &repository.UserRepository{
 				DB: db,

@@ -32,3 +32,15 @@ CREATE TABLE "public"."questions" (
     UNIQUE ("lobby_id", "order_number"),
     UNIQUE ("lobby_id", "title")
 );
+
+CREATE TABLE "public"."answers" (
+    "answer_id" varchar NOT NULL,
+    "question_id" varchar NOT NULL,
+    "uid" varchar NOT NULL,
+    "content" varchar NOT NULL,
+    "created_at" timestamptz NOT NULL DEFAULT now(),
+    "updated_at" timestamptz NOT NULL DEFAULT now(),
+    PRIMARY KEY ("answer_id"),
+    FOREIGN KEY ("question_id") REFERENCES "public"."questions"("question_id") ON UPDATE CASCADE,
+    FOREIGN KEY ("uid") REFERENCES "public"."users"("uid") ON UPDATE CASCADE
+);
