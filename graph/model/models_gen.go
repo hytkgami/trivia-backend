@@ -29,6 +29,10 @@ type CreateLobbyPayload struct {
 	Lobby *Lobby `json:"lobby"`
 }
 
+type CreateQuestionPayload struct {
+	Questions []*Question `json:"questions"`
+}
+
 type Lobby struct {
 	ID     string `json:"id"`
 	Name   string `json:"name"`
@@ -68,6 +72,22 @@ func (this LobbyEdge) GetNode() Node     { return *this.Node }
 type PageInfo struct {
 	HasNextPage bool   `json:"hasNextPage"`
 	Cursor      string `json:"cursor"`
+}
+
+type Question struct {
+	ID          string `json:"id"`
+	Title       string `json:"title"`
+	OrderNumber int    `json:"orderNumber"`
+	Score       int    `json:"score"`
+}
+
+func (Question) IsNode()            {}
+func (this Question) GetID() string { return this.ID }
+
+type QuestionInput struct {
+	Title       string `json:"title"`
+	OrderNumber int    `json:"orderNumber"`
+	Score       int    `json:"score"`
 }
 
 type SigninPayload struct {

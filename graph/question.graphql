@@ -1,0 +1,21 @@
+type Question implements Node {
+  id: ID!
+  title: String!
+  orderNumber: Int!
+  score: Int!
+  # lobby: Lobby!
+}
+
+extend type Mutation {
+  createQuestions(lobbyId: ID!, questions: [QuestionInput!]!): CreateQuestionPayload!
+}
+
+input QuestionInput {
+  title: String!
+  orderNumber: Int!
+  score: Int!
+}
+
+type CreateQuestionPayload {
+  questions: [Question!]!
+}

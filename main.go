@@ -54,6 +54,11 @@ func run(ctx context.Context) error {
 				DB: db,
 			},
 		},
+		QuestionInteractor: &usecase.QuestionInteractor{
+			QuestionRepository: &repository.QuestionRepository{
+				DB: db,
+			},
+		},
 	}}))
 
 	if os.Getenv("APP_ENV") == "development" {
