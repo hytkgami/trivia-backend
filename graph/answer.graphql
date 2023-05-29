@@ -1,0 +1,13 @@
+type Answer implements Node {
+  id: ID!
+  # question: Question!
+  content: String!
+}
+
+extend type Mutation {
+  answer(questionId: ID!, answer: String!): AnswerPayload!
+}
+
+type AnswerPayload {
+  answer: Answer!
+}
