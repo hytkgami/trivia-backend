@@ -11,6 +11,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/hytkgami/trivia-backend/graph"
+	"github.com/hytkgami/trivia-backend/graph/loader"
 	"github.com/hytkgami/trivia-backend/infrastructure"
 	"github.com/hytkgami/trivia-backend/interfaces/middleware"
 	"github.com/hytkgami/trivia-backend/interfaces/repository"
@@ -65,11 +66,18 @@ func run(ctx context.Context) error {
 			},
 		},
 	}}))
+	loaders := loader.NewLoaders(&loader.Config{
+		AnswerInteractor: &usecase.AnswerInteractor{
+			AnswerRepository: &repository.AnswerRepository{
+				DB: db,
+			},
+		},
+	})
 
 	if os.Getenv("APP_ENV") == "development" {
 		http.Handle("/", playground.Handler("GraphQL playground", "/query"))
 	}
-	http.Handle("/query", srv)
+	http.Handle("/query", loader.Middleware(loaders, srv))
 
 	authHandler, err := infrastructure.NewFirebaseAuthHandler(ctx)
 	if err != nil {

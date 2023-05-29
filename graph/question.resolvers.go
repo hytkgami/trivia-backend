@@ -7,6 +7,7 @@ package graph
 import (
 	"context"
 
+	"github.com/hytkgami/trivia-backend/graph/loader"
 	"github.com/hytkgami/trivia-backend/graph/model"
 	"github.com/hytkgami/trivia-backend/interfaces"
 	"github.com/hytkgami/trivia-backend/usecase"
@@ -43,3 +44,35 @@ func (r *mutationResolver) CreateQuestions(ctx context.Context, lobbyID string, 
 		Questions: result,
 	}, nil
 }
+
+// Questions is the resolver for the questions field.
+func (r *queryResolver) Questions(ctx context.Context, lobbyID string) ([]*model.Question, error) {
+	questions, err := r.QuestionInteractor.FetchQuestionsByLobbyID(ctx, lobbyID)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]*model.Question, len(questions))
+	for i, q := range questions {
+		result[i] = &model.Question{
+			ID:          q.ID,
+			Title:       q.Title,
+			OrderNumber: q.OrderNumber,
+			Score:       q.Score,
+		}
+	}
+	return result, nil
+}
+
+// Answers is the resolver for the answers field.
+func (r *questionResolver) Answers(ctx context.Context, obj *model.Question) ([]*model.Answer, error) {
+	answers, err := loader.LoadAnswersByQuestionID(ctx, obj.ID)
+	if err != nil {
+		return nil, err
+	}
+	return answers, nil
+}
+
+// Question returns QuestionResolver implementation.
+func (r *Resolver) Question() QuestionResolver { return &questionResolver{r} }
+
+type questionResolver struct{ *Resolver }

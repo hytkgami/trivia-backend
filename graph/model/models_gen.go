@@ -87,10 +87,11 @@ type PageInfo struct {
 }
 
 type Question struct {
-	ID          string `json:"id"`
-	Title       string `json:"title"`
-	OrderNumber int    `json:"orderNumber"`
-	Score       int    `json:"score"`
+	ID          string    `json:"id"`
+	Title       string    `json:"title"`
+	OrderNumber int       `json:"orderNumber"`
+	Score       int       `json:"score"`
+	Answers     []*Answer `json:"answers"`
 }
 
 func (Question) IsNode()            {}

@@ -4,6 +4,11 @@ type Question implements Node {
   orderNumber: Int!
   score: Int!
   # lobby: Lobby!
+  answers: [Answer!]!
+}
+
+extend type Query {
+  questions(lobbyId: ID!): [Question!]!
 }
 
 extend type Mutation {

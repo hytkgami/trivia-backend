@@ -40,3 +40,18 @@ func (r *QuestionRepository) CreateQuestions(ctx context.Context, uid, lobbyID s
 	}
 	return dbQuestions, nil
 }
+
+func (r *QuestionRepository) FetchQuestionsByLobbyID(ctx context.Context, lobbyID string) ([]*domain.Question, error) {
+	query := `
+		SELECT question_id, created_by, lobby_id, title, order_number, score
+		FROM questions
+		WHERE lobby_id = $1
+		ORDER BY order_number ASC
+	`
+	var dbQuestions []*domain.Question
+	err := r.DB.SelectContext(ctx, &dbQuestions, query, lobbyID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch questions by lobby id: %w", err)
+	}
+	return dbQuestions, nil
+}
