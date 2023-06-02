@@ -24,3 +24,12 @@ input QuestionInput {
 type CreateQuestionPayload {
   questions: [Question!]!
 }
+
+type Time {
+  unixTime: Int!
+  timeStamp: String!
+}
+
+type Subscription {
+  currentTime: Time!
+}

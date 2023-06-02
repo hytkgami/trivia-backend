@@ -6,6 +6,8 @@ package graph
 
 import (
 	"context"
+	"fmt"
+	"time"
 
 	"github.com/hytkgami/trivia-backend/graph/loader"
 	"github.com/hytkgami/trivia-backend/graph/model"
@@ -72,7 +74,36 @@ func (r *questionResolver) Answers(ctx context.Context, obj *model.Question) ([]
 	return answers, nil
 }
 
+// CurrentTime is the resolver for the currentTime field.
+func (r *subscriptionResolver) CurrentTime(ctx context.Context) (<-chan *model.Time, error) {
+	ch := make(chan *model.Time)
+	go func() {
+		for {
+			time.Sleep(1 * time.Second)
+			fmt.Println("Tick")
+
+			currentTime := time.Now()
+			t := &model.Time{
+				UnixTime:  int(currentTime.Unix()),
+				TimeStamp: currentTime.Format(time.RFC3339),
+			}
+
+			select {
+			case ch <- t:
+			default:
+				fmt.Println("Channel closed.")
+				return
+			}
+		}
+	}()
+	return ch, nil
+}
+
 // Question returns QuestionResolver implementation.
 func (r *Resolver) Question() QuestionResolver { return &questionResolver{r} }
 
+// Subscription returns SubscriptionResolver implementation.
+func (r *Resolver) Subscription() SubscriptionResolver { return &subscriptionResolver{r} }
+
 type questionResolver struct{ *Resolver }
+type subscriptionResolver struct{ *Resolver }

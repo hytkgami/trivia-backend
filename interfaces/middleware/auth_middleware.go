@@ -19,9 +19,17 @@ func NewAuthMiddleware(authHandler repository.FirebaseAuthHandler) *AuthMiddlewa
 	}
 }
 
+func (m *AuthMiddleware) isWebSocket(r *http.Request) bool {
+	return r.Header.Get("Upgrade") == "websocket" && r.Header.Get("Connection") == "Upgrade"
+}
+
 func (m *AuthMiddleware) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if m.isPublicPath(r.URL.Path) {
+			next.ServeHTTP(w, r)
+			return
+		}
+		if m.isWebSocket(r) {
 			next.ServeHTTP(w, r)
 			return
 		}
