@@ -14,7 +14,8 @@ services:
       - ../..:/workspaces:cached
       - $HOME/.config/gcloud/application_default_credentials.json:/workspaces/.config/gcloud/application_default_credentials.json:ro
     command: sleep infinity
-    network_mode: service:db
+    networks:
+      - default
   db:
     image: postgres:latest
     restart: unless-stopped
@@ -24,5 +25,12 @@ services:
       - .env
   redis:
     image: "redis:latest"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
     ports:
       - "6379:6379"
+networks:
+  default:

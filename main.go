@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -51,6 +52,18 @@ func run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	defer db.Close()
+	redisHandler := infrastructure.NewRedisHandler()
+	err = redisHandler.Set(ctx, "foo", "bar", 0)
+	if err != nil {
+		panic(err)
+	}
+
+	val, err := redisHandler.Get(ctx, "foo")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("foo", val)
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
