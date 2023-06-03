@@ -13,6 +13,7 @@ extend type Query {
 
 extend type Mutation {
   createQuestions(lobbyId: ID!, questions: [QuestionInput!]!): CreateQuestionPayload!
+  publishQuestion(lobbyId: ID!, questionId: ID!): PublishQuestionPayload!
 }
 
 input QuestionInput {
@@ -23,6 +24,10 @@ input QuestionInput {
 
 type CreateQuestionPayload {
   questions: [Question!]!
+}
+
+type PublishQuestionPayload {
+  question: Question!
 }
 
 type Time {

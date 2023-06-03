@@ -47,6 +47,22 @@ func (r *mutationResolver) CreateQuestions(ctx context.Context, lobbyID string, 
 	}, nil
 }
 
+// PublishQuestion is the resolver for the publishQuestion field.
+func (r *mutationResolver) PublishQuestion(ctx context.Context, lobbyID string, questionID string) (*model.PublishQuestionPayload, error) {
+	q, err := r.QuestionInteractor.PublishQuestion(ctx, lobbyID, questionID)
+	if err != nil {
+		return nil, err
+	}
+	return &model.PublishQuestionPayload{
+		Question: &model.Question{
+			ID:          q.ID,
+			Title:       q.Title,
+			OrderNumber: q.OrderNumber,
+			Score:       q.Score,
+		},
+	}, nil
+}
+
 // Questions is the resolver for the questions field.
 func (r *queryResolver) Questions(ctx context.Context, lobbyID string) ([]*model.Question, error) {
 	questions, err := r.QuestionInteractor.FetchQuestionsByLobbyID(ctx, lobbyID)

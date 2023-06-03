@@ -86,12 +86,17 @@ type ComplexityRoot struct {
 		CreateLobby     func(childComplexity int, name string, public bool) int
 		CreateQuestions func(childComplexity int, lobbyID string, questions []*model.QuestionInput) int
 		DeleteLobby     func(childComplexity int, id string) int
+		PublishQuestion func(childComplexity int, lobbyID string, questionID string) int
 		Signin          func(childComplexity int, name string) int
 	}
 
 	PageInfo struct {
 		Cursor      func(childComplexity int) int
 		HasNextPage func(childComplexity int) int
+	}
+
+	PublishQuestionPayload struct {
+		Question func(childComplexity int) int
 	}
 
 	Query struct {
@@ -133,6 +138,7 @@ type MutationResolver interface {
 	CreateLobby(ctx context.Context, name string, public bool) (*model.CreateLobbyPayload, error)
 	DeleteLobby(ctx context.Context, id string) (*model.Lobby, error)
 	CreateQuestions(ctx context.Context, lobbyID string, questions []*model.QuestionInput) (*model.CreateQuestionPayload, error)
+	PublishQuestion(ctx context.Context, lobbyID string, questionID string) (*model.PublishQuestionPayload, error)
 }
 type QueryResolver interface {
 	Lobbies(ctx context.Context, first *int, last *int, after *string, before *string, orderDirection model.OrderDirection, orderBy model.LobbiesQueryOrderBy) (*model.LobbyConnection, error)
@@ -293,6 +299,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.DeleteLobby(childComplexity, args["id"].(string)), true
 
+	case "Mutation.publishQuestion":
+		if e.complexity.Mutation.PublishQuestion == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_publishQuestion_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.PublishQuestion(childComplexity, args["lobbyId"].(string), args["questionId"].(string)), true
+
 	case "Mutation.signin":
 		if e.complexity.Mutation.Signin == nil {
 			break
@@ -318,6 +336,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.PageInfo.HasNextPage(childComplexity), true
+
+	case "PublishQuestionPayload.question":
+		if e.complexity.PublishQuestionPayload.Question == nil {
+			break
+		}
+
+		return e.complexity.PublishQuestionPayload.Question(childComplexity), true
 
 	case "Query.lobbies":
 		if e.complexity.Query.Lobbies == nil {
@@ -625,6 +650,30 @@ func (ec *executionContext) field_Mutation_deleteLobby_args(ctx context.Context,
 		}
 	}
 	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_publishQuestion_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["lobbyId"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("lobbyId"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["lobbyId"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["questionId"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("questionId"))
+		arg1, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["questionId"] = arg1
 	return args, nil
 }
 
@@ -1659,6 +1708,65 @@ func (ec *executionContext) fieldContext_Mutation_createQuestions(ctx context.Co
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_publishQuestion(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_publishQuestion(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().PublishQuestion(rctx, fc.Args["lobbyId"].(string), fc.Args["questionId"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.PublishQuestionPayload)
+	fc.Result = res
+	return ec.marshalNPublishQuestionPayload2ᚖgithubᚗcomᚋhytkgamiᚋtriviaᚑbackendᚋgraphᚋmodelᚐPublishQuestionPayload(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_publishQuestion(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "question":
+				return ec.fieldContext_PublishQuestionPayload_question(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type PublishQuestionPayload", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_publishQuestion_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _PageInfo_hasNextPage(ctx context.Context, field graphql.CollectedField, obj *model.PageInfo) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_PageInfo_hasNextPage(ctx, field)
 	if err != nil {
@@ -1742,6 +1850,62 @@ func (ec *executionContext) fieldContext_PageInfo_cursor(ctx context.Context, fi
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PublishQuestionPayload_question(ctx context.Context, field graphql.CollectedField, obj *model.PublishQuestionPayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PublishQuestionPayload_question(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Question, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Question)
+	fc.Result = res
+	return ec.marshalNQuestion2ᚖgithubᚗcomᚋhytkgamiᚋtriviaᚑbackendᚋgraphᚋmodelᚐQuestion(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PublishQuestionPayload_question(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PublishQuestionPayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Question_id(ctx, field)
+			case "title":
+				return ec.fieldContext_Question_title(ctx, field)
+			case "orderNumber":
+				return ec.fieldContext_Question_orderNumber(ctx, field)
+			case "score":
+				return ec.fieldContext_Question_score(ctx, field)
+			case "answers":
+				return ec.fieldContext_Question_answers(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Question", field.Name)
 		},
 	}
 	return fc, nil
@@ -4772,6 +4936,15 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "publishQuestion":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_publishQuestion(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -4803,6 +4976,34 @@ func (ec *executionContext) _PageInfo(ctx context.Context, sel ast.SelectionSet,
 		case "cursor":
 
 			out.Values[i] = ec._PageInfo_cursor(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var publishQuestionPayloadImplementors = []string{"PublishQuestionPayload"}
+
+func (ec *executionContext) _PublishQuestionPayload(ctx context.Context, sel ast.SelectionSet, obj *model.PublishQuestionPayload) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, publishQuestionPayloadImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("PublishQuestionPayload")
+		case "question":
+
+			out.Values[i] = ec._PublishQuestionPayload_question(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++
@@ -5682,6 +5883,20 @@ func (ec *executionContext) marshalNPageInfo2ᚖgithubᚗcomᚋhytkgamiᚋtrivia
 		return graphql.Null
 	}
 	return ec._PageInfo(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNPublishQuestionPayload2githubᚗcomᚋhytkgamiᚋtriviaᚑbackendᚋgraphᚋmodelᚐPublishQuestionPayload(ctx context.Context, sel ast.SelectionSet, v model.PublishQuestionPayload) graphql.Marshaler {
+	return ec._PublishQuestionPayload(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNPublishQuestionPayload2ᚖgithubᚗcomᚋhytkgamiᚋtriviaᚑbackendᚋgraphᚋmodelᚐPublishQuestionPayload(ctx context.Context, sel ast.SelectionSet, v *model.PublishQuestionPayload) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._PublishQuestionPayload(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNQuestion2ᚕᚖgithubᚗcomᚋhytkgamiᚋtriviaᚑbackendᚋgraphᚋmodelᚐQuestionᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Question) graphql.Marshaler {

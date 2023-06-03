@@ -86,6 +86,10 @@ type PageInfo struct {
 	Cursor      string `json:"cursor"`
 }
 
+type PublishQuestionPayload struct {
+	Question *Question `json:"question"`
+}
+
 type Question struct {
 	ID          string    `json:"id"`
 	Title       string    `json:"title"`

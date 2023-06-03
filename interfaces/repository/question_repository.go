@@ -11,7 +11,8 @@ import (
 )
 
 type QuestionRepository struct {
-	DB *sqlx.DB
+	DB           *sqlx.DB
+	RedisHandler RedisHandler
 }
 
 func (r *QuestionRepository) CreateQuestions(ctx context.Context, uid, lobbyID string, questions []*usecase.QuestionInput) ([]*domain.Question, error) {
@@ -39,6 +40,30 @@ func (r *QuestionRepository) CreateQuestions(ctx context.Context, uid, lobbyID s
 		return nil, fmt.Errorf("failed to create questions: %w", err)
 	}
 	return dbQuestions, nil
+}
+
+func (r *QuestionRepository) PublishQuestion(ctx context.Context, lobbyID, questionID string) error {
+	key := fmt.Sprintf("lobby:%s:question", lobbyID)
+	err := r.RedisHandler.Set(ctx, key, questionID, 0)
+	if err != nil {
+		return fmt.Errorf("failed to publish question: %w", err)
+	}
+	return nil
+}
+
+func (r *QuestionRepository) FetchQuestionByID(ctx context.Context, questionID string) (*domain.Question, error) {
+	query := `
+		SELECT question_id, created_by, lobby_id, title, order_number, score
+		FROM questions
+		WHERE question_id = $1
+		LIMIT 1;
+	`
+	var question domain.Question
+	err := r.DB.GetContext(ctx, &question, query, questionID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch question by id: %w", err)
+	}
+	return &question, nil
 }
 
 func (r *QuestionRepository) FetchQuestionsByLobbyID(ctx context.Context, lobbyID string) ([]*domain.Question, error) {

@@ -20,6 +20,14 @@ func (i *QuestionInteractor) CreateQuestions(ctx context.Context, uid, lobbyID s
 	return i.QuestionRepository.CreateQuestions(ctx, uid, lobbyID, questions)
 }
 
+func (i *QuestionInteractor) PublishQuestion(ctx context.Context, lobbyID, questionID string) (*domain.Question, error) {
+	err := i.QuestionRepository.PublishQuestion(ctx, lobbyID, questionID)
+	if err != nil {
+		return nil, err
+	}
+	return i.QuestionRepository.FetchQuestionByID(ctx, questionID)
+}
+
 func (i *QuestionInteractor) FetchQuestionsByLobbyID(ctx context.Context, lobbyID string) ([]*domain.Question, error) {
 	return i.QuestionRepository.FetchQuestionsByLobbyID(ctx, lobbyID)
 }

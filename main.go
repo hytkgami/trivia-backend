@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -54,16 +53,7 @@ func run(ctx context.Context) error {
 	}
 	defer db.Close()
 	redisHandler := infrastructure.NewRedisHandler()
-	err = redisHandler.Set(ctx, "foo", "bar", 0)
-	if err != nil {
-		panic(err)
-	}
-
-	val, err := redisHandler.Get(ctx, "foo")
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("foo", val)
+	defer redisHandler.Close()
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
@@ -88,7 +78,8 @@ func run(ctx context.Context) error {
 		},
 		QuestionInteractor: &usecase.QuestionInteractor{
 			QuestionRepository: &repository.QuestionRepository{
-				DB: db,
+				DB:           db,
+				RedisHandler: redisHandler,
 			},
 		},
 	}}))
