@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -54,6 +55,9 @@ func run(ctx context.Context) error {
 	defer db.Close()
 	redisHandler := infrastructure.NewRedisHandler()
 	defer redisHandler.Close()
+	if err := redisHandler.Ping(ctx); err != nil {
+		return fmt.Errorf("failed to ping redis: %w", err)
+	}
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},

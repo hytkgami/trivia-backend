@@ -33,6 +33,10 @@ func (h *RedisHandler) Close() error {
 	return h.client.Close()
 }
 
+func (h *RedisHandler) Ping(ctx context.Context) error {
+	return h.client.Ping(ctx).Err()
+}
+
 func (h *RedisHandler) Set(ctx context.Context, key string, value any, expiration time.Duration) error {
 	return h.client.Set(ctx, key, value, expiration).Err()
 }
