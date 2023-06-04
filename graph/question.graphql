@@ -30,11 +30,6 @@ type PublishQuestionPayload {
   question: Question!
 }
 
-type Time {
-  unixTime: Int!
-  timeStamp: String!
-}
-
 type Subscription {
-  currentTime: Time!
+  currentQuestion(lobbyId: ID!): Question!
 }

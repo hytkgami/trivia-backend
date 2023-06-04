@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/hytkgami/trivia-backend/domain"
@@ -42,13 +43,33 @@ func (r *QuestionRepository) CreateQuestions(ctx context.Context, uid, lobbyID s
 	return dbQuestions, nil
 }
 
+func (r *QuestionRepository) currentQuestionIDKey(lobbyID string) string {
+	return fmt.Sprintf("lobby:%s:question", lobbyID)
+}
+
 func (r *QuestionRepository) PublishQuestion(ctx context.Context, lobbyID, questionID string) error {
 	key := fmt.Sprintf("lobby:%s:question", lobbyID)
 	err := r.RedisHandler.Set(ctx, key, questionID, 0)
 	if err != nil {
 		return fmt.Errorf("failed to publish question: %w", err)
 	}
+	err = r.RedisHandler.Publish(ctx, lobbyID, questionID)
+	if err != nil {
+		return fmt.Errorf("failed to publish question: %w", err)
+	}
 	return nil
+}
+
+func (r *QuestionRepository) FetchCurrentQuestionID(ctx context.Context, lobbyID string) (string, error) {
+	key := r.currentQuestionIDKey(lobbyID)
+	questionID, err := r.RedisHandler.Get(ctx, key)
+	if err != nil {
+		if err == errors.New("redis: nil") {
+			return "", nil
+		}
+		return "", fmt.Errorf("failed to fetch current question id: %w", err)
+	}
+	return questionID, nil
 }
 
 func (r *QuestionRepository) FetchQuestionByID(ctx context.Context, questionID string) (*domain.Question, error) {
@@ -79,4 +100,20 @@ func (r *QuestionRepository) FetchQuestionsByLobbyID(ctx context.Context, lobbyI
 		return nil, fmt.Errorf("failed to fetch questions by lobby id: %w", err)
 	}
 	return dbQuestions, nil
+}
+
+func (r *QuestionRepository) SubscribeCurrentQuestionID(ctx context.Context, lobbyID string, ch chan<- string) {
+	pubsub := r.RedisHandler.Subscribe(ctx, lobbyID)
+	go func() {
+		event := pubsub.Channel()
+		for e := range event {
+			select {
+			case ch <- e.Payload:
+			default:
+				fmt.Println("failed to send current question id")
+				pubsub.Close()
+				return
+			}
+		}
+	}()
 }

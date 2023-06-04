@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hytkgami/trivia-backend/domain"
 )
@@ -28,6 +29,39 @@ func (i *QuestionInteractor) PublishQuestion(ctx context.Context, lobbyID, quest
 	return i.QuestionRepository.FetchQuestionByID(ctx, questionID)
 }
 
+func (i *QuestionInteractor) FetchQuestionByID(ctx context.Context, questionID string) (*domain.Question, error) {
+	return i.QuestionRepository.FetchQuestionByID(ctx, questionID)
+}
+
 func (i *QuestionInteractor) FetchQuestionsByLobbyID(ctx context.Context, lobbyID string) ([]*domain.Question, error) {
 	return i.QuestionRepository.FetchQuestionsByLobbyID(ctx, lobbyID)
+}
+
+func (i *QuestionInteractor) SubscribeCurrentQuestion(ctx context.Context, lobbyID string, ch chan<- *domain.Question) error {
+	questionID, err := i.QuestionRepository.FetchCurrentQuestionID(ctx, lobbyID)
+	if err != nil {
+		return err
+	}
+	question, err := i.QuestionRepository.FetchQuestionByID(ctx, questionID)
+	if err != nil {
+		return err
+	}
+	ch <- question
+	questionIDCh := make(chan string)
+	i.QuestionRepository.SubscribeCurrentQuestionID(ctx, lobbyID, questionIDCh)
+	go func() {
+		for questionID := range questionIDCh {
+			question, err := i.QuestionRepository.FetchQuestionByID(ctx, questionID)
+			if err != nil {
+				continue
+			}
+			select {
+			case ch <- question:
+			default:
+				fmt.Println("question channel is full")
+				return
+			}
+		}
+	}()
+	return nil
 }

@@ -11,4 +11,6 @@ type QuestionRepository interface {
 	PublishQuestion(ctx context.Context, lobbyID, questionID string) error
 	FetchQuestionByID(ctx context.Context, questionID string) (*domain.Question, error)
 	FetchQuestionsByLobbyID(ctx context.Context, lobbyID string) ([]*domain.Question, error)
+	SubscribeCurrentQuestionID(ctx context.Context, lobbyID string, ch chan<- string)
+	FetchCurrentQuestionID(ctx context.Context, lobbyID string) (string, error)
 }

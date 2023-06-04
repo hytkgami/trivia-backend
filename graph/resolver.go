@@ -1,6 +1,8 @@
 package graph
 
-import "github.com/hytkgami/trivia-backend/usecase"
+import (
+	"github.com/hytkgami/trivia-backend/usecase"
+)
 
 // This file will not be regenerated automatically.
 //

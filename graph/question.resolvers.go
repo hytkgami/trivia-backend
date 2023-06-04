@@ -7,8 +7,8 @@ package graph
 import (
 	"context"
 	"fmt"
-	"time"
 
+	"github.com/hytkgami/trivia-backend/domain"
 	"github.com/hytkgami/trivia-backend/graph/loader"
 	"github.com/hytkgami/trivia-backend/graph/model"
 	"github.com/hytkgami/trivia-backend/interfaces"
@@ -90,29 +90,33 @@ func (r *questionResolver) Answers(ctx context.Context, obj *model.Question) ([]
 	return answers, nil
 }
 
-// CurrentTime is the resolver for the currentTime field.
-func (r *subscriptionResolver) CurrentTime(ctx context.Context) (<-chan *model.Time, error) {
-	ch := make(chan *model.Time)
+// CurrentQuestion is the resolver for the currentQuestion field.
+func (r *subscriptionResolver) CurrentQuestion(ctx context.Context, lobbyID string) (<-chan *model.Question, error) {
+	ch := make(chan *domain.Question)
 	go func() {
-		for {
-			time.Sleep(1 * time.Second)
-			fmt.Println("Tick")
-
-			currentTime := time.Now()
-			t := &model.Time{
-				UnixTime:  int(currentTime.Unix()),
-				TimeStamp: currentTime.Format(time.RFC3339),
+		err := r.QuestionInteractor.SubscribeCurrentQuestion(ctx, lobbyID, ch)
+		if err != nil {
+			return
+		}
+	}()
+	modelCh := make(chan *model.Question)
+	go func() {
+		for q := range ch {
+			m := &model.Question{
+				ID:          q.ID,
+				Title:       q.Title,
+				OrderNumber: q.OrderNumber,
+				Score:       q.Score,
 			}
-
 			select {
-			case ch <- t:
+			case modelCh <- m:
 			default:
 				fmt.Println("Channel closed.")
 				return
 			}
 		}
 	}()
-	return ch, nil
+	return modelCh, nil
 }
 
 // Question returns QuestionResolver implementation.
