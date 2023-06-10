@@ -60,7 +60,9 @@ func run(ctx context.Context) error {
 	}
 
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"*"},
+		AllowedOrigins:   []string{"*", "http://localhost:5173"},
+		AllowedHeaders:   []string{"Content-Type", "Accept", "Authorization"},
+		AllowedMethods:   []string{http.MethodGet, http.MethodPost, http.MethodHead, http.MethodOptions},
 		AllowCredentials: true,
 		Debug:            false,
 	})
@@ -93,6 +95,7 @@ func run(ctx context.Context) error {
 		return err
 	}
 
+	srv.AddTransport(&transport.Options{})
 	srv.AddTransport(&transport.POST{})
 	srv.AddTransport(&transport.Websocket{
 		KeepAlivePingInterval: 10 * time.Second,

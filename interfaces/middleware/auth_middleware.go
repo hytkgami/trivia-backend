@@ -29,6 +29,10 @@ func (m *AuthMiddleware) Middleware(next http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 			return
 		}
+		if r.Method == http.MethodOptions {
+			next.ServeHTTP(w, r)
+			return
+		}
 		if m.isWebSocket(r) {
 			next.ServeHTTP(w, r)
 			return
