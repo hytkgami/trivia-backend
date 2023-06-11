@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hytkgami/trivia-backend/domain"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -27,4 +28,25 @@ func (r *UserRepository) UpsertUser(ctx context.Context, uid string, name string
 		return fmt.Errorf("failed to upsert user: %w", err)
 	}
 	return nil
+}
+
+func (r *UserRepository) FetchUsersByUIDs(ctx context.Context, uids []string) ([]*domain.User, error) {
+	query, args, err := sqlx.In(`
+		SELECT
+			uid, name
+		FROM
+			users
+		WHERE
+			uid IN (?)
+	`, uids)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch users: %w", err)
+	}
+	query = r.DB.Rebind(query)
+	var users []*domain.User
+	err = r.DB.SelectContext(ctx, &users, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch users: %w", err)
+	}
+	return users, nil
 }

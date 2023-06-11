@@ -45,15 +45,6 @@ type CreateQuestionPayload struct {
 	Questions []*Question `json:"questions"`
 }
 
-type Lobby struct {
-	ID     string `json:"id"`
-	Name   string `json:"name"`
-	Public bool   `json:"public"`
-}
-
-func (Lobby) IsNode()            {}
-func (this Lobby) GetID() string { return this.ID }
-
 type LobbyConnection struct {
 	Edges    []*LobbyEdge `json:"edges"`
 	PageInfo *PageInfo    `json:"pageInfo"`

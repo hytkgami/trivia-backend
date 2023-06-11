@@ -2,7 +2,7 @@ type Lobby implements Node {
   id: ID!
   name: String!
   public: Boolean!
-  # owner: User!
+  owner: User!
 }
 
 type Query {

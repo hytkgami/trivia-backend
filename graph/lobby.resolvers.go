@@ -10,10 +10,20 @@ import (
 	"strings"
 
 	"github.com/hytkgami/trivia-backend/graph/helper"
+	"github.com/hytkgami/trivia-backend/graph/loader"
 	"github.com/hytkgami/trivia-backend/graph/model"
 	"github.com/hytkgami/trivia-backend/interfaces"
 	"github.com/hytkgami/trivia-backend/usecase"
 )
+
+// Owner is the resolver for the owner field.
+func (r *lobbyResolver) Owner(ctx context.Context, obj *model.Lobby) (*model.User, error) {
+	user, err := loader.LoadUser(ctx, obj.OwnerUID)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}
 
 // CreateLobby is the resolver for the createLobby field.
 func (r *mutationResolver) CreateLobby(ctx context.Context, name string, public bool) (*model.CreateLobbyPayload, error) {
@@ -59,9 +69,10 @@ func (r *queryResolver) Lobbies(ctx context.Context, first *int, last *int, afte
 	for i, lobby := range lobbies {
 		edges[i] = &model.LobbyEdge{
 			Node: &model.Lobby{
-				ID:     lobby.ID,
-				Name:   lobby.Name,
-				Public: lobby.IsPublic,
+				ID:       lobby.ID,
+				Name:     lobby.Name,
+				Public:   lobby.IsPublic,
+				OwnerUID: lobby.OwnerUID,
 			},
 			Cursor: lobby.ID,
 		}
@@ -80,7 +91,11 @@ func (r *queryResolver) Lobby(ctx context.Context, id string) (*model.Lobby, err
 	panic(fmt.Errorf("not implemented: Lobby - lobby"))
 }
 
+// Lobby returns LobbyResolver implementation.
+func (r *Resolver) Lobby() LobbyResolver { return &lobbyResolver{r} }
+
 // Query returns QueryResolver implementation.
 func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
+type lobbyResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }

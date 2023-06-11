@@ -20,3 +20,7 @@ func (i *UserInteractor) Signin(ctx context.Context, uid, name string) (*domain.
 		Name: name,
 	}, nil
 }
+
+func (i *UserInteractor) FetchUsersByUIDs(ctx context.Context, uids []string) ([]*domain.User, error) {
+	return i.UserRepository.FetchUsersByUIDs(ctx, uids)
+}

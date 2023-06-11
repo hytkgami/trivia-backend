@@ -38,6 +38,7 @@ type Config struct {
 }
 
 type ResolverRoot interface {
+	Lobby() LobbyResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
 	Question() QuestionResolver
@@ -68,6 +69,7 @@ type ComplexityRoot struct {
 	Lobby struct {
 		ID     func(childComplexity int) int
 		Name   func(childComplexity int) int
+		Owner  func(childComplexity int) int
 		Public func(childComplexity int) int
 	}
 
@@ -127,6 +129,9 @@ type ComplexityRoot struct {
 	}
 }
 
+type LobbyResolver interface {
+	Owner(ctx context.Context, obj *model.Lobby) (*model.User, error)
+}
 type MutationResolver interface {
 	Signin(ctx context.Context, name string) (*model.SigninPayload, error)
 	Answer(ctx context.Context, questionID string, answer string) (*model.AnswerPayload, error)
@@ -210,6 +215,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Lobby.Name(childComplexity), true
+
+	case "Lobby.owner":
+		if e.complexity.Lobby.Owner == nil {
+			break
+		}
+
+		return e.complexity.Lobby.Owner(childComplexity), true
 
 	case "Lobby.public":
 		if e.complexity.Lobby.Public == nil {
@@ -1019,6 +1031,8 @@ func (ec *executionContext) fieldContext_CreateLobbyPayload_lobby(ctx context.Co
 				return ec.fieldContext_Lobby_name(ctx, field)
 			case "public":
 				return ec.fieldContext_Lobby_public(ctx, field)
+			case "owner":
+				return ec.fieldContext_Lobby_owner(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Lobby", field.Name)
 		},
@@ -1214,6 +1228,56 @@ func (ec *executionContext) fieldContext_Lobby_public(ctx context.Context, field
 	return fc, nil
 }
 
+func (ec *executionContext) _Lobby_owner(ctx context.Context, field graphql.CollectedField, obj *model.Lobby) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Lobby_owner(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Lobby().Owner(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.User)
+	fc.Result = res
+	return ec.marshalNUser2ᚖgithubᚗcomᚋhytkgamiᚋtriviaᚑbackendᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Lobby_owner(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Lobby",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_User_id(ctx, field)
+			case "name":
+				return ec.fieldContext_User_name(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _LobbyConnection_edges(ctx context.Context, field graphql.CollectedField, obj *model.LobbyConnection) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_LobbyConnection_edges(ctx, field)
 	if err != nil {
@@ -1403,6 +1467,8 @@ func (ec *executionContext) fieldContext_LobbyEdge_node(ctx context.Context, fie
 				return ec.fieldContext_Lobby_name(ctx, field)
 			case "public":
 				return ec.fieldContext_Lobby_public(ctx, field)
+			case "owner":
+				return ec.fieldContext_Lobby_owner(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Lobby", field.Name)
 		},
@@ -1632,6 +1698,8 @@ func (ec *executionContext) fieldContext_Mutation_deleteLobby(ctx context.Contex
 				return ec.fieldContext_Lobby_name(ctx, field)
 			case "public":
 				return ec.fieldContext_Lobby_public(ctx, field)
+			case "owner":
+				return ec.fieldContext_Lobby_owner(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Lobby", field.Name)
 		},
@@ -2015,6 +2083,8 @@ func (ec *executionContext) fieldContext_Query_lobby(ctx context.Context, field 
 				return ec.fieldContext_Lobby_name(ctx, field)
 			case "public":
 				return ec.fieldContext_Lobby_public(ctx, field)
+			case "owner":
+				return ec.fieldContext_Lobby_owner(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Lobby", field.Name)
 		},
@@ -4705,22 +4775,42 @@ func (ec *executionContext) _Lobby(ctx context.Context, sel ast.SelectionSet, ob
 			out.Values[i] = ec._Lobby_id(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "name":
 
 			out.Values[i] = ec._Lobby_name(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "public":
 
 			out.Values[i] = ec._Lobby_public(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
+		case "owner":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Lobby_owner(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5901,6 +5991,10 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNUser2githubᚗcomᚋhytkgamiᚋtriviaᚑbackendᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v model.User) graphql.Marshaler {
+	return ec._User(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋhytkgamiᚋtriviaᚑbackendᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {

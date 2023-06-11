@@ -27,3 +27,6 @@ models:
     fields:
       answers:
         resolver: true
+  Lobby:
+    model:
+      - github.com/hytkgami/trivia-backend/graph/model.Lobby

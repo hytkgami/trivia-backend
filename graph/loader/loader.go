@@ -12,6 +12,7 @@ type loaderKey struct{}
 
 type Loaders struct {
 	AnswerLoader *dataloader.Loader[string, []*model.Answer]
+	UserLoader   *dataloader.Loader[string, *model.User]
 }
 
 func Middleware(loaders *Loaders, next http.Handler) http.Handler {
@@ -26,9 +27,15 @@ func NewLoaders(cfg *Config) *Loaders {
 	answerLoader := &AnswerLoader{
 		Interactor: cfg.AnswerInteractor,
 	}
+	userLoader := &UserLoader{
+		Interactor: cfg.UserInteractor,
+	}
 	return &Loaders{
 		AnswerLoader: dataloader.NewBatchedLoader(
 			answerLoader.BatchGetByQuestionIDs,
+		),
+		UserLoader: dataloader.NewBatchedLoader(
+			userLoader.BatchGet,
 		),
 	}
 }
