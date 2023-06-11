@@ -30,3 +30,6 @@ models:
   Lobby:
     model:
       - github.com/hytkgami/trivia-backend/graph/model.Lobby
+  Answer:
+    model:
+      - github.com/hytkgami/trivia-backend/graph/model.Answer

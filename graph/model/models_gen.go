@@ -25,14 +25,6 @@ type Node interface {
 	GetID() string
 }
 
-type Answer struct {
-	ID      string `json:"id"`
-	Content string `json:"content"`
-}
-
-func (Answer) IsNode()            {}
-func (this Answer) GetID() string { return this.ID }
-
 type AnswerPayload struct {
 	Answer *Answer `json:"answer"`
 }

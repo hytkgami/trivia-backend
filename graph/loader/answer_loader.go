@@ -24,8 +24,10 @@ func (l *AnswerLoader) BatchGetByQuestionIDs(ctx context.Context, questionIDs []
 	mapped := map[string][]*model.Answer{}
 	for _, answer := range answers {
 		ans := &model.Answer{
-			ID:      answer.ID,
-			Content: answer.Content,
+			ID:         answer.ID,
+			Content:    answer.Content,
+			QuestionID: answer.QuestionID,
+			UID:        answer.UID,
 		}
 		mapped[answer.QuestionID] = append(mapped[answer.QuestionID], ans)
 	}

@@ -23,8 +23,10 @@ func (r *mutationResolver) Answer(ctx context.Context, questionID string, answer
 	}
 	return &model.AnswerPayload{
 		Answer: &model.Answer{
-			ID:      a.ID,
-			Content: a.Content,
+			ID:         a.ID,
+			Content:    a.Content,
+			QuestionID: a.QuestionID,
+			UID:        a.UID,
 		},
 	}, nil
 }
