@@ -25,6 +25,24 @@ func (r *lobbyResolver) Owner(ctx context.Context, obj *model.Lobby) (*model.Use
 	return user, nil
 }
 
+// Questions is the resolver for the questions field.
+func (r *lobbyResolver) Questions(ctx context.Context, obj *model.Lobby) ([]*model.Question, error) {
+	questions, err := r.QuestionInteractor.FetchQuestionsByLobbyID(ctx, obj.ID)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]*model.Question, len(questions))
+	for i, q := range questions {
+		result[i] = &model.Question{
+			ID:          q.ID,
+			Title:       q.Title,
+			OrderNumber: q.OrderNumber,
+			Score:       q.Score,
+		}
+	}
+	return result, nil
+}
+
 // CreateLobby is the resolver for the createLobby field.
 func (r *mutationResolver) CreateLobby(ctx context.Context, name string, public bool) (*model.CreateLobbyPayload, error) {
 	uid, err := interfaces.GetUserUID(ctx)

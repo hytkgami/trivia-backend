@@ -3,6 +3,7 @@ type Lobby implements Node {
   name: String!
   public: Boolean!
   owner: User!
+  questions: [Question!]!
 }
 
 type Query {
