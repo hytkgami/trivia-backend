@@ -2062,11 +2062,14 @@ func (ec *executionContext) _Query_lobby(ctx context.Context, field graphql.Coll
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.(*model.Lobby)
 	fc.Result = res
-	return ec.marshalOLobby2ᚖgithubᚗcomᚋhytkgamiᚋtriviaᚑbackendᚋgraphᚋmodelᚐLobby(ctx, field.Selections, res)
+	return ec.marshalNLobby2ᚖgithubᚗcomᚋhytkgamiᚋtriviaᚑbackendᚋgraphᚋmodelᚐLobby(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_lobby(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -5091,6 +5094,9 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_lobby(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
 				return res
 			}
 
@@ -6316,13 +6322,6 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	}
 	res := graphql.MarshalInt(*v)
 	return res
-}
-
-func (ec *executionContext) marshalOLobby2ᚖgithubᚗcomᚋhytkgamiᚋtriviaᚑbackendᚋgraphᚋmodelᚐLobby(ctx context.Context, sel ast.SelectionSet, v *model.Lobby) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._Lobby(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v interface{}) (*string, error) {

@@ -14,7 +14,7 @@ type Query {
     orderDirection: OrderDirection! = ASC
     orderBy: LobbiesQueryOrderBy! = LOBBY_ID
   ): LobbyConnection!
-  lobby(id: ID!): Lobby
+  lobby(id: ID!): Lobby!
 }
 
 enum LobbiesQueryOrderBy {

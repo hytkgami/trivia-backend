@@ -14,6 +14,10 @@ func (i *LobbyInteractor) CreateLobby(ctx context.Context, uid, name string, pub
 	return i.LobbyRepository.CreateLobby(ctx, uid, name, public)
 }
 
+func (i *LobbyInteractor) FetchLobby(ctx context.Context, id string) (*domain.Lobby, error) {
+	return i.LobbyRepository.FetchLobby(ctx, id)
+}
+
 func (i *LobbyInteractor) FetchLobbies(ctx context.Context, params *CursorParams) ([]*domain.Lobby, *PageInfo, error) {
 	pagination := params.ToCursorPagination()
 	lobbies, err := i.LobbyRepository.FetchLobbies(ctx, pagination)

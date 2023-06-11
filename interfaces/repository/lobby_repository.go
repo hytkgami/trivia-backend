@@ -43,6 +43,25 @@ func (r *LobbyRepository) CreateLobby(ctx context.Context, uid, name string, pub
 	}, nil
 }
 
+func (r *LobbyRepository) FetchLobby(ctx context.Context, id string) (*domain.Lobby, error) {
+	query := `
+		SELECT
+			lobby_id, owner_uid, name, is_public
+		FROM
+			"public"."lobbies"
+		WHERE
+			lobby_id = ?
+		;
+	`
+	query = r.DB.Rebind(query)
+	var lobby domain.Lobby
+	err := r.DB.GetContext(ctx, &lobby, query, id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch lobby: %w", err)
+	}
+	return &lobby, nil
+}
+
 func (r *LobbyRepository) FetchLobbies(ctx context.Context, pagination *usecase.CursorPagination) ([]*domain.Lobby, error) {
 	query := `SELECT lobby_id, owner_uid, name, is_public FROM "public"."lobbies" WHERE is_public = TRUE`
 	cursorQuery, whereArgs, err := generateCursorQuery(pagination)

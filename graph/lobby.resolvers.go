@@ -88,7 +88,16 @@ func (r *queryResolver) Lobbies(ctx context.Context, first *int, last *int, afte
 
 // Lobby is the resolver for the lobby field.
 func (r *queryResolver) Lobby(ctx context.Context, id string) (*model.Lobby, error) {
-	panic(fmt.Errorf("not implemented: Lobby - lobby"))
+	lobby, err := r.LobbyInteractor.FetchLobby(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return &model.Lobby{
+		ID:       lobby.ID,
+		Name:     lobby.Name,
+		Public:   lobby.IsPublic,
+		OwnerUID: lobby.OwnerUID,
+	}, nil
 }
 
 // Lobby returns LobbyResolver implementation.
