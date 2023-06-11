@@ -38,6 +38,7 @@ type Config struct {
 }
 
 type ResolverRoot interface {
+	Answer() AnswerResolver
 	Lobby() LobbyResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
@@ -52,6 +53,7 @@ type ComplexityRoot struct {
 	Answer struct {
 		Content func(childComplexity int) int
 		ID      func(childComplexity int) int
+		Owner   func(childComplexity int) int
 	}
 
 	AnswerPayload struct {
@@ -130,6 +132,9 @@ type ComplexityRoot struct {
 	}
 }
 
+type AnswerResolver interface {
+	Owner(ctx context.Context, obj *model.Answer) (*model.User, error)
+}
 type LobbyResolver interface {
 	Owner(ctx context.Context, obj *model.Lobby) (*model.User, error)
 	Questions(ctx context.Context, obj *model.Lobby) ([]*model.Question, error)
@@ -182,6 +187,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Answer.ID(childComplexity), true
+
+	case "Answer.owner":
+		if e.complexity.Answer.Owner == nil {
+			break
+		}
+
+		return e.complexity.Answer.Owner(childComplexity), true
 
 	case "AnswerPayload.answer":
 		if e.complexity.AnswerPayload.Answer == nil {
@@ -945,6 +957,56 @@ func (ec *executionContext) fieldContext_Answer_content(ctx context.Context, fie
 	return fc, nil
 }
 
+func (ec *executionContext) _Answer_owner(ctx context.Context, field graphql.CollectedField, obj *model.Answer) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Answer_owner(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Answer().Owner(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.User)
+	fc.Result = res
+	return ec.marshalNUser2ᚖgithubᚗcomᚋhytkgamiᚋtriviaᚑbackendᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Answer_owner(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Answer",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_User_id(ctx, field)
+			case "name":
+				return ec.fieldContext_User_name(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _AnswerPayload_answer(ctx context.Context, field graphql.CollectedField, obj *model.AnswerPayload) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_AnswerPayload_answer(ctx, field)
 	if err != nil {
@@ -988,6 +1050,8 @@ func (ec *executionContext) fieldContext_AnswerPayload_answer(ctx context.Contex
 				return ec.fieldContext_Answer_id(ctx, field)
 			case "content":
 				return ec.fieldContext_Answer_content(ctx, field)
+			case "owner":
+				return ec.fieldContext_Answer_owner(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Answer", field.Name)
 		},
@@ -2594,6 +2658,8 @@ func (ec *executionContext) fieldContext_Question_answers(ctx context.Context, f
 				return ec.fieldContext_Answer_id(ctx, field)
 			case "content":
 				return ec.fieldContext_Answer_content(ctx, field)
+			case "owner":
+				return ec.fieldContext_Answer_owner(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Answer", field.Name)
 		},
@@ -4732,15 +4798,35 @@ func (ec *executionContext) _Answer(ctx context.Context, sel ast.SelectionSet, o
 			out.Values[i] = ec._Answer_id(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "content":
 
 			out.Values[i] = ec._Answer_content(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
+		case "owner":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Answer_owner(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

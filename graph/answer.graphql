@@ -2,6 +2,7 @@ type Answer implements Node {
   id: ID!
   # question: Question!
   content: String!
+  owner: User!
 }
 
 extend type Mutation {

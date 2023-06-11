@@ -7,9 +7,19 @@ package graph
 import (
 	"context"
 
+	"github.com/hytkgami/trivia-backend/graph/loader"
 	"github.com/hytkgami/trivia-backend/graph/model"
 	"github.com/hytkgami/trivia-backend/interfaces"
 )
+
+// Owner is the resolver for the owner field.
+func (r *answerResolver) Owner(ctx context.Context, obj *model.Answer) (*model.User, error) {
+	user, err := loader.LoadUser(ctx, obj.UID)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}
 
 // Answer is the resolver for the answer field.
 func (r *mutationResolver) Answer(ctx context.Context, questionID string, answer string) (*model.AnswerPayload, error) {
@@ -30,3 +40,8 @@ func (r *mutationResolver) Answer(ctx context.Context, questionID string, answer
 		},
 	}, nil
 }
+
+// Answer returns AnswerResolver implementation.
+func (r *Resolver) Answer() AnswerResolver { return &answerResolver{r} }
+
+type answerResolver struct{ *Resolver }
