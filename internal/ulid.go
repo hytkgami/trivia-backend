@@ -1,15 +1,15 @@
 package internal
 
 import (
+	"crypto/rand"
 	"fmt"
-	"math/rand"
 	"time"
 
 	"github.com/oklog/ulid/v2"
 )
 
 func NewULID() (string, error) {
-	entropy := rand.New(rand.NewSource(time.Now().UnixNano()))
+	entropy := ulid.Monotonic(rand.Reader, 0)
 	ms := ulid.Timestamp(time.Now())
 	id, err := ulid.New(ms, entropy)
 	if err != nil {
