@@ -88,6 +88,11 @@ func run(ctx context.Context) error {
 				RedisHandler: redisHandler,
 			},
 		},
+		ScoreInteractor: &usecase.ScoreInteractor{
+			ScoreRepository: &repository.ScoreRepository{
+				DB: db,
+			},
+		},
 	}}))
 
 	authHandler, err := infrastructure.NewFirebaseAuthHandler(ctx)
@@ -123,6 +128,11 @@ func run(ctx context.Context) error {
 	loaders := loader.NewLoaders(&loader.Config{
 		AnswerInteractor: &usecase.AnswerInteractor{
 			AnswerRepository: &repository.AnswerRepository{
+				DB: db,
+			},
+		},
+		ScoreInteractor: &usecase.ScoreInteractor{
+			ScoreRepository: &repository.ScoreRepository{
 				DB: db,
 			},
 		},

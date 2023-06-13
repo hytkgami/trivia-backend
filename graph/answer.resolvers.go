@@ -6,6 +6,7 @@ package graph
 
 import (
 	"context"
+	"strings"
 
 	"github.com/hytkgami/trivia-backend/graph/loader"
 	"github.com/hytkgami/trivia-backend/graph/model"
@@ -14,11 +15,12 @@ import (
 
 // Owner is the resolver for the owner field.
 func (r *answerResolver) Owner(ctx context.Context, obj *model.Answer) (*model.User, error) {
-	user, err := loader.LoadUser(ctx, obj.UID)
-	if err != nil {
-		return nil, err
-	}
-	return user, nil
+	return loader.LoadUser(ctx, obj.UID)
+}
+
+// Score is the resolver for the score field.
+func (r *answerResolver) Score(ctx context.Context, obj *model.Answer) (*model.Score, error) {
+	return loader.LoadScoresByAnswerID(ctx, obj.ID)
 }
 
 // Answer is the resolver for the answer field.
@@ -37,6 +39,27 @@ func (r *mutationResolver) Answer(ctx context.Context, questionID string, answer
 			Content:    a.Content,
 			QuestionID: a.QuestionID,
 			UID:        a.UID,
+		},
+	}, nil
+}
+
+// Scoring is the resolver for the scoring field.
+func (r *mutationResolver) Scoring(ctx context.Context, answerID string, mark model.Mark, value int) (*model.ScoringPayload, error) {
+	markString := strings.ToLower(string(mark))
+	err := r.ScoreInteractor.CreateScore(ctx, answerID, markString, value)
+	if err != nil {
+		return nil, err
+	}
+	answer, err := r.AnswerInteractor.FetchByID(ctx, answerID)
+	if err != nil {
+		return nil, err
+	}
+	return &model.ScoringPayload{
+		Answer: &model.Answer{
+			ID:         answer.ID,
+			Content:    answer.Content,
+			QuestionID: answer.QuestionID,
+			UID:        answer.UID,
 		},
 	}, nil
 }

@@ -30,12 +30,12 @@ func (l *UserLoader) BatchGet(ctx context.Context, uids []string) []*dataloader.
 		}
 	}
 	for i, uid := range uids {
-		owners, ok := mapped[uid]
+		owner, ok := mapped[uid]
 		if !ok {
 			err := errors.New("user not found")
 			result[i] = &dataloader.Result[*model.User]{Data: nil, Error: err}
 		}
-		result[i] = &dataloader.Result[*model.User]{Data: owners, Error: nil}
+		result[i] = &dataloader.Result[*model.User]{Data: owner, Error: nil}
 	}
 	return result
 }

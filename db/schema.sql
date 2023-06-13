@@ -45,3 +45,14 @@ CREATE TABLE "public"."answers" (
     FOREIGN KEY ("uid") REFERENCES "public"."users"("uid") ON UPDATE CASCADE,
     UNIQUE ("question_id", "uid")
 );
+
+CREATE TYPE mark AS ENUM ('correct', 'neutral', 'incorrect');
+CREATE TABLE "public"."scores" (
+    "answer_id" varchar NOT NULL,
+    "mark" mark NOT NULL,
+    "value" int4 NOT NULL,
+    "created_at" timestamptz NOT NULL DEFAULT now(),
+    "updated_at" timestamptz NOT NULL DEFAULT now(),
+    PRIMARY KEY ("answer_id"),
+    FOREIGN KEY ("answer_id") REFERENCES "public"."answers"("answer_id") ON UPDATE CASCADE
+);

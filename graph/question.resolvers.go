@@ -83,11 +83,7 @@ func (r *queryResolver) Questions(ctx context.Context, lobbyID string) ([]*model
 
 // Answers is the resolver for the answers field.
 func (r *questionResolver) Answers(ctx context.Context, obj *model.Question) ([]*model.Answer, error) {
-	answers, err := loader.LoadAnswersByQuestionID(ctx, obj.ID)
-	if err != nil {
-		return nil, err
-	}
-	return answers, nil
+	return loader.LoadAnswersByQuestionID(ctx, obj.ID)
 }
 
 // CurrentQuestion is the resolver for the currentQuestion field.

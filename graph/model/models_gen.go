@@ -90,6 +90,15 @@ type QuestionInput struct {
 	Score       int    `json:"score"`
 }
 
+type Score struct {
+	Value int  `json:"value"`
+	Mark  Mark `json:"mark"`
+}
+
+type ScoringPayload struct {
+	Answer *Answer `json:"answer"`
+}
+
 type SigninPayload struct {
 	User *User `json:"user"`
 }
@@ -138,6 +147,49 @@ func (e *LobbiesQueryOrderBy) UnmarshalGQL(v interface{}) error {
 }
 
 func (e LobbiesQueryOrderBy) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type Mark string
+
+const (
+	MarkCorrect   Mark = "CORRECT"
+	MarkNeutral   Mark = "NEUTRAL"
+	MarkIncorrect Mark = "INCORRECT"
+)
+
+var AllMark = []Mark{
+	MarkCorrect,
+	MarkNeutral,
+	MarkIncorrect,
+}
+
+func (e Mark) IsValid() bool {
+	switch e {
+	case MarkCorrect, MarkNeutral, MarkIncorrect:
+		return true
+	}
+	return false
+}
+
+func (e Mark) String() string {
+	return string(e)
+}
+
+func (e *Mark) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = Mark(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid Mark", str)
+	}
+	return nil
+}
+
+func (e Mark) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 

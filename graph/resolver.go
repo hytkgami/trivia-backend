@@ -13,4 +13,5 @@ type Resolver struct {
 	UserInteractor     *usecase.UserInteractor
 	LobbyInteractor    *usecase.LobbyInteractor
 	QuestionInteractor *usecase.QuestionInteractor
+	ScoreInteractor    *usecase.ScoreInteractor
 }

@@ -59,3 +59,34 @@ func (r *AnswerRepository) FetchByQuestionIDs(ctx context.Context, questionIDs [
 	}
 	return answers, nil
 }
+
+func (r *AnswerRepository) FetchByID(ctx context.Context, id string) (*domain.Answer, error) {
+	query := "SELECT answer_id, uid, question_id, content FROM answers WHERE answer_id = $1"
+	var answer domain.Answer
+	err := r.DB.GetContext(ctx, &answer, query, id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch an answer: %w", err)
+	}
+	return &answer, nil
+}
+
+func (r *AnswerRepository) FetchByIDs(ctx context.Context, ids []string) ([]*domain.Answer, error) {
+	query := "SELECT answer_id, uid, question_id, content FROM answers WHERE answer_id IN (:ids)"
+	query, args, err := sqlx.Named(query, map[string]any{
+		"answer_ids": ids,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch answers: %w", err)
+	}
+	query, args, err = sqlx.In(query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch answers: %w", err)
+	}
+	query = r.DB.Rebind(query)
+	var answers []*domain.Answer
+	err = r.DB.SelectContext(ctx, &answers, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch answers: %w", err)
+	}
+	return answers, nil
+}

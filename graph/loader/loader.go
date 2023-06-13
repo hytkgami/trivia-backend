@@ -12,6 +12,7 @@ type loaderKey struct{}
 
 type Loaders struct {
 	AnswerLoader *dataloader.Loader[string, []*model.Answer]
+	ScoreLoader  *dataloader.Loader[string, *model.Score]
 	UserLoader   *dataloader.Loader[string, *model.User]
 }
 
@@ -27,12 +28,18 @@ func NewLoaders(cfg *Config) *Loaders {
 	answerLoader := &AnswerLoader{
 		Interactor: cfg.AnswerInteractor,
 	}
+	scoreLoader := &ScoreLoader{
+		ScoreInteractor: cfg.ScoreInteractor,
+	}
 	userLoader := &UserLoader{
 		Interactor: cfg.UserInteractor,
 	}
 	return &Loaders{
 		AnswerLoader: dataloader.NewBatchedLoader(
 			answerLoader.BatchGetByQuestionIDs,
+		),
+		ScoreLoader: dataloader.NewBatchedLoader(
+			scoreLoader.BatchGetByAnswerIDs,
 		),
 		UserLoader: dataloader.NewBatchedLoader(
 			userLoader.BatchGet,

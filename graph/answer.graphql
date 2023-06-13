@@ -3,12 +3,29 @@ type Answer implements Node {
   # question: Question!
   content: String!
   owner: User!
+  score: Score!
+}
+
+type Score {
+  value: Int!
+  mark: Mark!
+}
+
+enum Mark {
+  CORRECT
+  NEUTRAL
+  INCORRECT
 }
 
 extend type Mutation {
   answer(questionId: ID!, answer: String!): AnswerPayload!
+  scoring(answerId: ID!, mark: Mark!, value: Int!): ScoringPayload!
 }
 
 type AnswerPayload {
+  answer: Answer!
+}
+
+type ScoringPayload {
   answer: Answer!
 }
