@@ -17,6 +17,16 @@ CREATE TABLE "public"."lobbies" (
     FOREIGN KEY ("owner_uid") REFERENCES "public"."users"("uid") ON UPDATE CASCADE
 );
 
+CREATE TYPE lobby_status AS ENUM ('waiting', 'active', 'finished');
+CREATE TABLE "public"."lobby_statuses" (
+    "lobby_id" varchar NOT NULL,
+    "status" lobby_status NOT NULL DEFAULT 'waiting',
+    "created_at" timestamptz NOT NULL DEFAULT now(),
+    "updated_at" timestamptz NOT NULL DEFAULT now(),
+    PRIMARY KEY ("lobby_id"),
+    FOREIGN KEY ("lobby_id") REFERENCES "public"."lobbies"("lobby_id") ON UPDATE CASCADE
+);
+
 CREATE TABLE "public"."questions" (
     "question_id" varchar NOT NULL,
     "created_by" varchar NOT NULL, -- uid of user who created the question
