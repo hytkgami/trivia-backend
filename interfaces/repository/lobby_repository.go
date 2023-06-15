@@ -22,7 +22,7 @@ func (r *LobbyRepository) CreateLobby(ctx context.Context, uid, name string, pub
 	}
 	query := `
     INSERT INTO
-      "public"."lobbies" (lobby_id, owner_uid, name, is_public)
+      lobbies (lobby_id, owner_uid, name, is_public)
     VALUES
       (:lobby_id, :owner_uid, :name, :is_public)
     ;
@@ -49,7 +49,7 @@ func (r *LobbyRepository) FetchLobby(ctx context.Context, id string) (*domain.Lo
 		SELECT
 			lobby_id, owner_uid, name, is_public
 		FROM
-			"public"."lobbies"
+			lobbies
 		WHERE
 			lobby_id = ?
 		;
@@ -64,7 +64,7 @@ func (r *LobbyRepository) FetchLobby(ctx context.Context, id string) (*domain.Lo
 }
 
 func (r *LobbyRepository) FetchLobbies(ctx context.Context, pagination *usecase.CursorPagination) ([]*domain.Lobby, error) {
-	query := `SELECT lobby_id, owner_uid, name, is_public FROM "public"."lobbies" WHERE is_public = TRUE`
+	query := `SELECT lobby_id, owner_uid, name, is_public FROM lobbies WHERE is_public = 1`
 	cursorQuery, whereArgs, err := generateCursorQuery(pagination)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch lobbies: %w", err)
@@ -89,19 +89,20 @@ func (r *LobbyRepository) FetchLobbies(ctx context.Context, pagination *usecase.
 func (r *LobbyRepository) CreateLobbyStatus(ctx context.Context, id string) error {
 	query := `
 		INSERT INTO
-			"public"."lobby_statuses" (lobby_id)
+			lobby_lobby_status (lobby_id, lobby_status_id)
 		VALUES
-			(:lobby_id)
+			(:lobby_id, :lobby_status_id)
 		;
 	`
 	_, err := r.DB.NamedExecContext(ctx, query, map[string]any{
-		"lobby_id": id,
+		"lobby_id":        id,
+		"lobby_status_id": domain.LobbyStatusWaitingID,
 	})
 	return err
 }
 
 func (r *LobbyRepository) FetchLobbyStatus(ctx context.Context, id string) (domain.LobbyStatus, error) {
-	query := `SELECT status FROM "public"."lobby_statuses" WHERE lobby_id = ?`
+	query := `SELECT ls.status FROM lobby_lobby_statuses lls JOIN lobby_status ls USING(lobby_status_id) WHERE ls.lobby_status_id = ?`
 	query = r.DB.Rebind(query)
 	var status domain.LobbyStatus
 	err := r.DB.GetContext(ctx, &status, query, id)
@@ -147,9 +148,9 @@ func (r *LobbyRepository) PublishLobbyStatus(ctx context.Context, id string, sta
 }
 
 func (r *LobbyRepository) UpdateLobbyStatus(ctx context.Context, id string, status domain.LobbyStatus) error {
-	query := `UPDATE "public"."lobby_statuses" SET status = ? WHERE lobby_id = ?`
+	query := `UPDATE lobby_lobby_status SET lobby_status_id = ? WHERE lobby_id = ?`
 	query = r.DB.Rebind(query)
-	_, err := r.DB.ExecContext(ctx, query, status, id)
+	_, err := r.DB.ExecContext(ctx, query, status.ID(), id)
 	if err != nil {
 		return fmt.Errorf("failed to update lobby status: %w", err)
 	}

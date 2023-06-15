@@ -17,7 +17,7 @@ func (r *AnswerRepository) Create(ctx context.Context, uid, quesitonID, content 
 	query := `
     INSERT INTO answers (answer_id, uid, question_id, content)
     VALUES (:answer_id, :uid, :question_id, :content)
-		ON CONFLICT (question_id, uid) DO UPDATE SET content = :content, updated_at = NOW();
+		ON DUPLICATE KEY UPDATE content = VALUES(content), updated_at = NOW();
   `
 	id, err := internal.NewULID()
 	if err != nil {
@@ -61,7 +61,7 @@ func (r *AnswerRepository) FetchByQuestionIDs(ctx context.Context, questionIDs [
 }
 
 func (r *AnswerRepository) FetchByID(ctx context.Context, id string) (*domain.Answer, error) {
-	query := "SELECT answer_id, uid, question_id, content FROM answers WHERE answer_id = $1"
+	query := "SELECT answer_id, uid, question_id, content FROM answers WHERE answer_id = ?"
 	var answer domain.Answer
 	err := r.DB.GetContext(ctx, &answer, query, id)
 	if err != nil {

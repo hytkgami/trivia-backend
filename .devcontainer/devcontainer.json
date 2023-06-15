@@ -1,5 +1,5 @@
 {
-	"name": "Go & PostgreSQL",
+	"name": "Go & MySQL",
 	"dockerComposeFile": "docker-compose.yml",
 	"service": "app",
 	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
@@ -17,7 +17,7 @@
 	},
 	"forwardPorts": [
 		8080,
-		5432
+		3306
 	],
 	"postCreateCommand": "go version"
 }

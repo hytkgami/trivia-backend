@@ -13,10 +13,11 @@ type ScoreRepository struct {
 }
 
 func (r *ScoreRepository) CreateScore(ctx context.Context, score *domain.Score) error {
+	fmt.Println(score)
 	query := `
 		INSERT INTO scores (answer_id, mark, value)
 		VALUES (:answer_id, :mark, :value)
-		ON CONFLICT (answer_id) DO UPDATE SET mark = :mark, value = :value, updated_at = NOW();`
+		ON DUPLICATE KEY UPDATE mark = VALUES(mark), value = VALUES(value), updated_at = NOW();`
 	_, err := r.DB.NamedExecContext(ctx, query, score)
 	if err != nil {
 		return fmt.Errorf("failed to create a score: %w", err)

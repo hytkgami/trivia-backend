@@ -76,7 +76,7 @@ func (r *QuestionRepository) FetchQuestionByID(ctx context.Context, questionID s
 	query := `
 		SELECT question_id, created_by, lobby_id, title, order_number, score
 		FROM questions
-		WHERE question_id = $1
+		WHERE question_id = ?
 		LIMIT 1;
 	`
 	var question domain.Question
@@ -91,7 +91,7 @@ func (r *QuestionRepository) FetchQuestionsByLobbyID(ctx context.Context, lobbyI
 	query := `
 		SELECT question_id, created_by, lobby_id, title, order_number, score
 		FROM questions
-		WHERE lobby_id = $1
+		WHERE lobby_id = ?
 		ORDER BY order_number ASC
 	`
 	var dbQuestions []*domain.Question

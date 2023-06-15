@@ -18,7 +18,7 @@ func (r *UserRepository) UpsertUser(ctx context.Context, uid string, name string
       users (uid, name)
     VALUES
       (:uid, :name)
-    ON CONFLICT (uid) DO UPDATE SET name = :name, updated_at = NOW();
+    ON DUPLICATE KEY UPDATE name = VALUES(name), updated_at = NOW();
   `
 	_, err := r.DB.NamedExecContext(ctx, query, map[string]any{
 		"uid":  uid,
