@@ -79,7 +79,8 @@ func run(ctx context.Context) error {
 		},
 		LobbyInteractor: &usecase.LobbyInteractor{
 			LobbyRepository: &repository.LobbyRepository{
-				DB: db,
+				DB:           db,
+				RedisHandler: redisHandler,
 			},
 		},
 		QuestionInteractor: &usecase.QuestionInteractor{

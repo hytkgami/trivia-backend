@@ -69,6 +69,11 @@ type PageInfo struct {
 	Cursor      string `json:"cursor"`
 }
 
+type PublishLobbyStatusPayload struct {
+	Lobby  *Lobby      `json:"lobby"`
+	Status LobbyStatus `json:"status"`
+}
+
 type PublishQuestionPayload struct {
 	Question *Question `json:"question"`
 }
@@ -147,6 +152,49 @@ func (e *LobbiesQueryOrderBy) UnmarshalGQL(v interface{}) error {
 }
 
 func (e LobbiesQueryOrderBy) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type LobbyStatus string
+
+const (
+	LobbyStatusWaiting  LobbyStatus = "WAITING"
+	LobbyStatusActive   LobbyStatus = "ACTIVE"
+	LobbyStatusFinished LobbyStatus = "FINISHED"
+)
+
+var AllLobbyStatus = []LobbyStatus{
+	LobbyStatusWaiting,
+	LobbyStatusActive,
+	LobbyStatusFinished,
+}
+
+func (e LobbyStatus) IsValid() bool {
+	switch e {
+	case LobbyStatusWaiting, LobbyStatusActive, LobbyStatusFinished:
+		return true
+	}
+	return false
+}
+
+func (e LobbyStatus) String() string {
+	return string(e)
+}
+
+func (e *LobbyStatus) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = LobbyStatus(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid LobbyStatus", str)
+	}
+	return nil
+}
+
+func (e LobbyStatus) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 

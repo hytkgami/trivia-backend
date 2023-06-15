@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/hytkgami/trivia-backend/domain"
 	"github.com/hytkgami/trivia-backend/graph/helper"
 	"github.com/hytkgami/trivia-backend/graph/loader"
 	"github.com/hytkgami/trivia-backend/graph/model"
@@ -41,6 +42,31 @@ func (r *lobbyResolver) Questions(ctx context.Context, obj *model.Lobby) ([]*mod
 		}
 	}
 	return result, nil
+}
+
+// PublishLobbyStatus is the resolver for the publishLobbyStatus field.
+func (r *mutationResolver) PublishLobbyStatus(ctx context.Context, lobbyID string, status model.LobbyStatus) (*model.PublishLobbyStatusPayload, error) {
+	s := domain.LobbyStatus(strings.ToLower(string(status)))
+	if !s.Valid() {
+		return nil, fmt.Errorf("invalid lobby status: %s", status)
+	}
+	err := r.LobbyInteractor.PublishLobbyStatus(ctx, lobbyID, s)
+	if err != nil {
+		return nil, err
+	}
+	lobby, err := r.LobbyInteractor.FetchLobby(ctx, lobbyID)
+	if err != nil {
+		return nil, err
+	}
+	return &model.PublishLobbyStatusPayload{
+		Lobby: &model.Lobby{
+			ID:       lobby.ID,
+			Name:     lobby.Name,
+			Public:   lobby.IsPublic,
+			OwnerUID: lobby.OwnerUID,
+		},
+		Status: status,
+	}, nil
 }
 
 // CreateLobby is the resolver for the createLobby field.
@@ -116,6 +142,31 @@ func (r *queryResolver) Lobby(ctx context.Context, id string) (*model.Lobby, err
 		Public:   lobby.IsPublic,
 		OwnerUID: lobby.OwnerUID,
 	}, nil
+}
+
+// LobbyStatus is the resolver for the lobbyStatus field.
+func (r *subscriptionResolver) LobbyStatus(ctx context.Context, lobbyID string) (<-chan model.LobbyStatus, error) {
+	ch := make(chan domain.LobbyStatus)
+	go func() {
+		err := r.LobbyInteractor.SubscribeLobbyStatus(ctx, lobbyID, ch)
+		if err != nil {
+			return
+		}
+	}()
+	modelCh := make(chan model.LobbyStatus)
+	go func() {
+		for s := range ch {
+			m := model.LobbyStatus(strings.ToUpper(string(s)))
+			select {
+			case modelCh <- m:
+				fmt.Println("sent lobby status")
+			default:
+				fmt.Println("channel closed")
+				return
+			}
+		}
+	}()
+	return modelCh, nil
 }
 
 // Lobby returns LobbyResolver implementation.

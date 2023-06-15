@@ -22,9 +22,20 @@ enum LobbiesQueryOrderBy {
   LOBBY_ID
 }
 
+enum LobbyStatus {
+  WAITING
+  ACTIVE
+  FINISHED
+}
+
 extend type Mutation {
+  publishLobbyStatus(lobbyId: ID!, status: LobbyStatus!): PublishLobbyStatusPayload!
   createLobby(name: String!, public: Boolean! = false): CreateLobbyPayload!
   deleteLobby(id: ID!): Lobby!
+}
+
+extend type Subscription {
+  lobbyStatus(lobbyId: ID!): LobbyStatus!
 }
 
 type CreateLobbyPayload {
@@ -39,4 +50,9 @@ type LobbyEdge implements Edge {
 type LobbyConnection implements Connection {
   edges: [LobbyEdge!]!
   pageInfo: PageInfo!
+}
+
+type PublishLobbyStatusPayload {
+  lobby: Lobby!
+  status: LobbyStatus!
 }

@@ -11,7 +11,8 @@ import (
 )
 
 type LobbyRepository struct {
-	DB *sqlx.DB
+	DB           *sqlx.DB
+	RedisHandler RedisHandler
 }
 
 func (r *LobbyRepository) CreateLobby(ctx context.Context, uid, name string, public bool) (*domain.Lobby, error) {
@@ -83,4 +84,74 @@ func (r *LobbyRepository) FetchLobbies(ctx context.Context, pagination *usecase.
 		return nil, fmt.Errorf("failed to fetch lobbies: %w", err)
 	}
 	return lobbies, nil
+}
+
+func (r *LobbyRepository) CreateLobbyStatus(ctx context.Context, id string) error {
+	query := `
+		INSERT INTO
+			"public"."lobby_statuses" (lobby_id)
+		VALUES
+			(:lobby_id)
+		;
+	`
+	_, err := r.DB.NamedExecContext(ctx, query, map[string]any{
+		"lobby_id": id,
+	})
+	return err
+}
+
+func (r *LobbyRepository) FetchLobbyStatus(ctx context.Context, id string) (domain.LobbyStatus, error) {
+	query := `SELECT status FROM "public"."lobby_statuses" WHERE lobby_id = ?`
+	query = r.DB.Rebind(query)
+	var status domain.LobbyStatus
+	err := r.DB.GetContext(ctx, &status, query, id)
+	if err != nil {
+		return domain.LobbyStatusWaiting, fmt.Errorf("failed to fetch lobby status: %w", err)
+	}
+	return status, nil
+}
+
+func (r *LobbyRepository) SubscribeLobbyStatus(ctx context.Context, id string, ch chan<- domain.LobbyStatus) {
+	channelID := r.lobbyStatusKey(id)
+	pubsub := r.RedisHandler.Subscribe(ctx, channelID)
+	go func() {
+		event := pubsub.Channel()
+		for e := range event {
+			payload := e.Payload
+			select {
+			case ch <- domain.LobbyStatus(payload):
+			default:
+				fmt.Println("failed to send lobby status")
+				pubsub.Close()
+				return
+			}
+		}
+	}()
+}
+
+func (r *LobbyRepository) lobbyStatusKey(id string) string {
+	return fmt.Sprintf("lobby:%s:status", id)
+}
+
+func (r *LobbyRepository) PublishLobbyStatus(ctx context.Context, id string, status domain.LobbyStatus) error {
+	key := r.lobbyStatusKey(id)
+	err := r.RedisHandler.Set(ctx, key, status, 0)
+	if err != nil {
+		return fmt.Errorf("failed to publish lobby status: %w", err)
+	}
+	err = r.RedisHandler.Publish(ctx, key, status)
+	if err != nil {
+		return fmt.Errorf("failed to publish lobby status: %w", err)
+	}
+	return nil
+}
+
+func (r *LobbyRepository) UpdateLobbyStatus(ctx context.Context, id string, status domain.LobbyStatus) error {
+	query := `UPDATE "public"."lobby_statuses" SET status = ? WHERE lobby_id = ?`
+	query = r.DB.Rebind(query)
+	_, err := r.DB.ExecContext(ctx, query, status, id)
+	if err != nil {
+		return fmt.Errorf("failed to update lobby status: %w", err)
+	}
+	return nil
 }
