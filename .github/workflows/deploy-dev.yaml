@@ -59,4 +59,5 @@ jobs:
             --set-env-vars REDIS_PORT=${{ secrets.REDIS_PORT }} \
             --set-env-vars REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }} \
             --set-env-vars REDIS_DB=${{ secrets.REDIS_DB }} \
+            --set-env-vars APP_ENV=production \
             --quiet

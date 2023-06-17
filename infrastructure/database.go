@@ -19,5 +19,8 @@ func NewDB(ctx context.Context) (*sqlx.DB, error) {
 		os.Getenv("MYSQL_PORT"),
 		os.Getenv("MYSQL_DATABASE"),
 	)
+	if os.Getenv("APP_ENV") == "production" {
+		dsn = fmt.Sprintf("%s?tls=true", dsn)
+	}
 	return sqlx.ConnectContext(ctx, "mysql", dsn)
 }
