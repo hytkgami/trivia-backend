@@ -13,8 +13,7 @@ CREATE TABLE `lobbies` (
     `is_public` tinyint NOT NULL DEFAULT 0,
     `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (`lobby_id`),
-    FOREIGN KEY (`owner_uid`) REFERENCES `users`(`uid`) ON UPDATE CASCADE
+    PRIMARY KEY (`lobby_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `lobby_status` (
@@ -30,9 +29,7 @@ CREATE TABLE `lobby_lobby_status` (
     `lobby_status_id` varchar(26) NOT NULL,
     `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (`lobby_id`, `lobby_status_id`),
-    FOREIGN KEY (`lobby_id`) REFERENCES `lobbies`(`lobby_id`) ON UPDATE CASCADE,
-    FOREIGN KEY (`lobby_status_id`) REFERENCES `lobby_status`(`lobby_status_id`) ON UPDATE CASCADE
+    PRIMARY KEY (`lobby_id`, `lobby_status_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `questions` (
@@ -45,8 +42,6 @@ CREATE TABLE `questions` (
     `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`question_id`),
-    FOREIGN KEY (`created_by`) REFERENCES `users`(`uid`) ON UPDATE CASCADE,
-    FOREIGN KEY (`lobby_id`) REFERENCES `lobbies`(`lobby_id`) ON UPDATE CASCADE,
     UNIQUE KEY `uk_lobby_id_order_number_on_questions` (`lobby_id`, `order_number`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -58,8 +53,6 @@ CREATE TABLE `answers` (
     `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`answer_id`),
-    FOREIGN KEY (`question_id`) REFERENCES `questions`(`question_id`) ON UPDATE CASCADE,
-    FOREIGN KEY (`uid`) REFERENCES `users`(`uid`) ON UPDATE CASCADE,
     UNIQUE (`question_id`, `uid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -69,6 +62,5 @@ CREATE TABLE `scores` (
     `value` int NOT NULL,
     `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (`answer_id`),
-    FOREIGN KEY (`answer_id`) REFERENCES `answers`(`answer_id`) ON UPDATE CASCADE
+    PRIMARY KEY (`answer_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
