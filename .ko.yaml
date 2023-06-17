@@ -1,0 +1,6 @@
+builds:
+- id: app
+  dir: .
+  main: .
+  ldflags:
+  - -s -w
