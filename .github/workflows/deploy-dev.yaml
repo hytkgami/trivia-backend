@@ -35,7 +35,7 @@ jobs:
 
       - uses: ko-build/setup-ko@v0.6
       - name: Configure docker to use the gcloud cli
-        run: gcloud auth configure-docker --quiet
+        run: gcloud auth configure-docker asia-northeast1-docker.pkg.dev --quiet
 
       - name: Build and Deploy
         env:
