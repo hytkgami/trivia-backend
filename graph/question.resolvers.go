@@ -92,6 +92,7 @@ func (r *subscriptionResolver) CurrentQuestion(ctx context.Context, lobbyID stri
 	go func() {
 		err := r.QuestionInteractor.SubscribeCurrentQuestion(ctx, lobbyID, ch)
 		if err != nil {
+			fmt.Println(err)
 			return
 		}
 	}()

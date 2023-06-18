@@ -150,6 +150,7 @@ func (r *subscriptionResolver) LobbyStatus(ctx context.Context, lobbyID string) 
 	go func() {
 		err := r.LobbyInteractor.SubscribeLobbyStatus(ctx, lobbyID, ch)
 		if err != nil {
+			fmt.Println(err)
 			return
 		}
 	}()

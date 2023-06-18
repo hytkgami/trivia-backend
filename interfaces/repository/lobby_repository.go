@@ -102,7 +102,7 @@ func (r *LobbyRepository) CreateLobbyStatus(ctx context.Context, id string) erro
 }
 
 func (r *LobbyRepository) FetchLobbyStatus(ctx context.Context, id string) (domain.LobbyStatus, error) {
-	query := `SELECT ls.status FROM lobby_lobby_statuses lls JOIN lobby_status ls USING(lobby_status_id) WHERE ls.lobby_status_id = ?`
+	query := `SELECT ls.status FROM lobby_lobby_status lls JOIN lobby_status ls USING(lobby_status_id) WHERE lls.lobby_id = ?`
 	query = r.DB.Rebind(query)
 	var status domain.LobbyStatus
 	err := r.DB.GetContext(ctx, &status, query, id)
