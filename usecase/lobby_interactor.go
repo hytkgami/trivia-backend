@@ -20,6 +20,10 @@ func (i *LobbyInteractor) CreateLobby(ctx context.Context, uid, name string, pub
 	if err != nil {
 		return nil, err
 	}
+	err = i.PublishLobbyStatus(ctx, lobby.ID, domain.LobbyStatusWaiting)
+	if err != nil {
+		return nil, err
+	}
 	return lobby, nil
 }
 
