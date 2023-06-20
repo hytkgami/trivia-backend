@@ -3,7 +3,7 @@ type Answer implements Node {
   # question: Question!
   content: String!
   owner: User!
-  score: Score!
+  score: Score
 }
 
 type Score {

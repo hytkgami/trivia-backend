@@ -1200,14 +1200,11 @@ func (ec *executionContext) _Answer_score(ctx context.Context, field graphql.Col
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
 	res := resTmp.(*model.Score)
 	fc.Result = res
-	return ec.marshalNScore2ᚖgithubᚗcomᚋhytkgamiᚋtriviaᚑbackendᚋgraphᚋmodelᚐScore(ctx, field.Selections, res)
+	return ec.marshalOScore2ᚖgithubᚗcomᚋhytkgamiᚋtriviaᚑbackendᚋgraphᚋmodelᚐScore(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Answer_score(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -5494,9 +5491,6 @@ func (ec *executionContext) _Answer(ctx context.Context, sel ast.SelectionSet, o
 					}
 				}()
 				res = ec._Answer_score(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
 				return res
 			}
 
@@ -6978,20 +6972,6 @@ func (ec *executionContext) unmarshalNQuestionInput2ᚖgithubᚗcomᚋhytkgami�
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNScore2githubᚗcomᚋhytkgamiᚋtriviaᚑbackendᚋgraphᚋmodelᚐScore(ctx context.Context, sel ast.SelectionSet, v model.Score) graphql.Marshaler {
-	return ec._Score(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNScore2ᚖgithubᚗcomᚋhytkgamiᚋtriviaᚑbackendᚋgraphᚋmodelᚐScore(ctx context.Context, sel ast.SelectionSet, v *model.Score) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._Score(ctx, sel, v)
-}
-
 func (ec *executionContext) marshalNScoringPayload2githubᚗcomᚋhytkgamiᚋtriviaᚑbackendᚋgraphᚋmodelᚐScoringPayload(ctx context.Context, sel ast.SelectionSet, v model.ScoringPayload) graphql.Marshaler {
 	return ec._ScoringPayload(ctx, sel, &v)
 }
@@ -7358,6 +7338,13 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	}
 	res := graphql.MarshalInt(*v)
 	return res
+}
+
+func (ec *executionContext) marshalOScore2ᚖgithubᚗcomᚋhytkgamiᚋtriviaᚑbackendᚋgraphᚋmodelᚐScore(ctx context.Context, sel ast.SelectionSet, v *model.Score) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Score(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
