@@ -64,7 +64,7 @@ func run(ctx context.Context) error {
 		AllowedHeaders:   []string{"Content-Type", "Accept", "Authorization", "Host", "Upgrade", "Connection", "Sec-Websocket-Version", "Sec-Websocket-Key", "Sec-Websocket-Protocol"},
 		AllowedMethods:   []string{http.MethodGet, http.MethodPost, http.MethodHead, http.MethodOptions},
 		AllowCredentials: true,
-		Debug:            false,
+		Debug:            true,
 	})
 	srv := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{
 		AnswerInteractor: &usecase.AnswerInteractor{
