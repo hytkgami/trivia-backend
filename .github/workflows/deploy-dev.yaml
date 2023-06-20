@@ -2,8 +2,8 @@ name: Deploy to Cloud Run (development)
 
 on:
   push:
-    tags:
-      - v*
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
