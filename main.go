@@ -104,6 +104,7 @@ func run(ctx context.Context) error {
 	srv.AddTransport(&transport.Options{})
 	srv.AddTransport(&transport.POST{})
 	srv.AddTransport(&transport.Websocket{
+		PingPongInterval:      10 * time.Second,
 		KeepAlivePingInterval: 10 * time.Second,
 		Upgrader: websocket.Upgrader{
 			CheckOrigin: func(r *http.Request) bool {
