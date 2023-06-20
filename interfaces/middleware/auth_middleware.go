@@ -21,7 +21,14 @@ func NewAuthMiddleware(authHandler repository.FirebaseAuthHandler) *AuthMiddlewa
 }
 
 func (m *AuthMiddleware) isWebSocket(r *http.Request) bool {
-	return r.Header.Get("Upgrade") == "websocket" && r.Header.Get("Connection") == "Upgrade"
+	switch {
+	case
+		r.Header.Get("Upgrade") == "websocket" && r.Header.Get("Connection") == "Upgrade",
+		r.Header.Get("Upgrade") == "websocket" && r.Header.Get("Connection") == "upgrade": // VercelからCloud RunへのリクエストでConnectionが小文字になる
+		return true
+	default:
+		return false
+	}
 }
 
 func (m *AuthMiddleware) Middleware(next http.Handler) http.Handler {
