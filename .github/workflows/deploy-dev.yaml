@@ -45,9 +45,8 @@ jobs:
           gcloud run deploy trivia-backend \
             --region ${{ matrix.region }} \
             --allow-unauthenticated \
-            --concurrency=1 \
+            --concurrency=default \
             --cpu=1 \
-            --max-instances=1 \
             --min-instances=0 \
             --image $(ko build --platform=linux/amd64 -B) \
             --set-env-vars MYSQL_USER=${{ secrets.MYSQL_USER }} \
