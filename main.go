@@ -108,11 +108,7 @@ func run(ctx context.Context) error {
 		KeepAlivePingInterval: 10 * time.Second,
 		Upgrader: websocket.Upgrader{
 			CheckOrigin: func(r *http.Request) bool {
-				if os.Getenv("APP_ENV") == "development" {
-					return true
-				}
-				fmt.Println(r.Host, r.URL.Host)
-				return r.URL.Host == "trivia-develop.vercel.app"
+				return true
 			},
 		},
 		InitFunc: func(ctx context.Context, initPayload transport.InitPayload) (context.Context, error) {
