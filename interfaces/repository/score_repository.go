@@ -13,7 +13,6 @@ type ScoreRepository struct {
 }
 
 func (r *ScoreRepository) CreateScore(ctx context.Context, score *domain.Score) error {
-	fmt.Println(score)
 	query := `
 		INSERT INTO scores (answer_id, mark, value)
 		VALUES (:answer_id, :mark, :value)
