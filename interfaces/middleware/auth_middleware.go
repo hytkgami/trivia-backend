@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 
@@ -26,28 +27,34 @@ func (m *AuthMiddleware) isWebSocket(r *http.Request) bool {
 func (m *AuthMiddleware) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if m.isPublicPath(r.URL.Path) {
+			log.Println("public path")
 			next.ServeHTTP(w, r)
 			return
 		}
 		if r.Method == http.MethodOptions {
+			log.Println("options method")
 			next.ServeHTTP(w, r)
 			return
 		}
 		if m.isWebSocket(r) {
+			log.Println("websocket")
 			next.ServeHTTP(w, r)
 			return
 		}
 		if !m.validate(r) {
+			log.Println("invalid headers")
 			interfaces.HttpErrorResponse(w, fmt.Errorf("invalid headers"), http.StatusBadRequest)
 			return
 		}
 		idToken := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 		token, err := m.authHandler.VerifyIDToken(r.Context(), idToken)
 		if err != nil {
+			log.Println("unauthorized")
 			interfaces.HttpErrorResponse(w, fmt.Errorf("unauthorized: %v", err), http.StatusUnauthorized)
 			return
 		}
 		ctx := interfaces.SetUserUID(r.Context(), token.UID())
+		log.Println("authorized")
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
