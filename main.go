@@ -64,7 +64,7 @@ func run(ctx context.Context) error {
 		AllowedHeaders:   []string{"Content-Type", "Accept", "Authorization", "Host", "Upgrade", "Connection", "Sec-Websocket-Version", "Sec-Websocket-Key", "Sec-Websocket-Protocol"},
 		AllowedMethods:   []string{http.MethodGet, http.MethodPost, http.MethodHead, http.MethodOptions},
 		AllowCredentials: true,
-		Debug:            false,
+		Debug:            true,
 	})
 	srv := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{
 		AnswerInteractor: &usecase.AnswerInteractor{
@@ -108,7 +108,10 @@ func run(ctx context.Context) error {
 		KeepAlivePingInterval: 10 * time.Second,
 		Upgrader: websocket.Upgrader{
 			CheckOrigin: func(r *http.Request) bool {
-				return true
+				if os.Getenv("APP_ENV") == "development" {
+					return true
+				}
+				return r.Host == "trivia-develop.vercel.app"
 			},
 		},
 		InitFunc: func(ctx context.Context, initPayload transport.InitPayload) (context.Context, error) {
