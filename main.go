@@ -111,6 +111,7 @@ func run(ctx context.Context) error {
 				if os.Getenv("APP_ENV") == "development" {
 					return true
 				}
+				fmt.Println(r.Host)
 				return r.Host == "trivia-develop.vercel.app"
 			},
 		},
