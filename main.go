@@ -60,8 +60,8 @@ func run(ctx context.Context) error {
 	}
 
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"*", "http://localhost:5173"},
-		AllowedHeaders:   []string{"Content-Type", "Accept", "Authorization"},
+		AllowedOrigins:   []string{"http://localhost:5173", "https://trivia-develop.vercel.app"},
+		AllowedHeaders:   []string{"Content-Type", "Accept", "Authorization", "Host", "Upgrade", "Connection", "Sec-Websocket-Version", "Sec-Websocket-Key", "Sec-Websocket-Protocol"},
 		AllowedMethods:   []string{http.MethodGet, http.MethodPost, http.MethodHead, http.MethodOptions},
 		AllowCredentials: true,
 		Debug:            false,
