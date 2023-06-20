@@ -53,6 +53,10 @@ func (r *mutationResolver) PublishQuestion(ctx context.Context, lobbyID string, 
 	if err != nil {
 		return nil, err
 	}
+	err = r.LobbyInteractor.PublishLobbyStatus(ctx, lobbyID, domain.LobbyStatusActive)
+	if err != nil {
+		return nil, err
+	}
 	return &model.PublishQuestionPayload{
 		Question: &model.Question{
 			ID:          q.ID,
