@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 
@@ -33,7 +32,6 @@ func (m *AuthMiddleware) isWebSocket(r *http.Request) bool {
 
 func (m *AuthMiddleware) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Println("headers", r.Header)
 		if m.isPublicPath(r.URL.Path) {
 			next.ServeHTTP(w, r)
 			return

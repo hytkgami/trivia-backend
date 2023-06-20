@@ -37,12 +37,15 @@ func NewLoaders(cfg *Config) *Loaders {
 	return &Loaders{
 		AnswerLoader: dataloader.NewBatchedLoader(
 			answerLoader.BatchGetByQuestionIDs,
+			dataloader.WithClearCacheOnBatch[string, []*model.Answer](),
 		),
 		ScoreLoader: dataloader.NewBatchedLoader(
 			scoreLoader.BatchGetByAnswerIDs,
+			dataloader.WithClearCacheOnBatch[string, *model.Score](),
 		),
 		UserLoader: dataloader.NewBatchedLoader(
 			userLoader.BatchGet,
+			dataloader.WithClearCacheOnBatch[string, *model.User](),
 		),
 	}
 }
