@@ -3,7 +3,7 @@ module github.com/hytkgami/trivia-backend
 go 1.20
 
 require (
-	firebase.google.com/go/v4 v4.11.0
+	firebase.google.com/go/v4 v4.12.0
 	github.com/99designs/gqlgen v0.17.35
 	github.com/google/go-cmp v0.5.9
 	github.com/jmoiron/sqlx v1.3.5
