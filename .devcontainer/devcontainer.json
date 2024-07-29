@@ -1,23 +1,16 @@
 {
-	"name": "Go & MySQL",
-	"dockerComposeFile": "docker-compose.yml",
-	"service": "app",
-	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
-	"features": {
-		"ghcr.io/devcontainers/features/go:1": {}
-	},
-	"customizations": {
-		"vscode": {
-			"extensions": [
-				"golang.go",
-				"GitHub.copilot",
-				"GitHub.copilot-labs"
-			]
-		}
-	},
-	"forwardPorts": [
-		8080,
-		3306
-	],
-	"postCreateCommand": "go version"
+  "name": "Go & MySQL",
+  "dockerComposeFile": "compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "features": {
+    "ghcr.io/devcontainers/features/go:1": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": ["golang.go", "GitHub.copilot", "GitHub.copilot-labs"]
+    }
+  },
+  "forwardPorts": [8080, 3306],
+  "postCreateCommand": "go version"
 }

@@ -1,7 +1,7 @@
-FROM mcr.microsoft.com/devcontainers/go:0-1.20
+FROM mcr.microsoft.com/devcontainers/go:1-1.22-bookworm
 
 USER vscode
 
-RUN go install github.com/cosmtrek/air@latest & go install github.com/go-delve/delve/cmd/dlv@latest
+RUN go install github.com/air-verse/air@latest & go install github.com/go-delve/delve/cmd/dlv@latest
 
 CMD ["air", "-c", ".air.toml"]
