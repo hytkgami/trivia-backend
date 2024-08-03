@@ -3,9 +3,6 @@
   "dockerComposeFile": "compose.yml",
   "service": "app",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
-  "features": {
-    "ghcr.io/devcontainers/features/go:1": {}
-  },
   "customizations": {
     "vscode": {
       "extensions": ["golang.go", "GitHub.copilot", "GitHub.copilot-labs"]
