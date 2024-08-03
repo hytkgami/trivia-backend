@@ -7,7 +7,7 @@ require (
 	github.com/99designs/gqlgen v0.17.36
 	github.com/google/go-cmp v0.5.9
 	github.com/jmoiron/sqlx v1.3.5
-	github.com/vektah/gqlparser/v2 v2.5.8
+	github.com/vektah/gqlparser/v2 v2.5.15
 	golang.org/x/sync v0.2.0
 )
 
